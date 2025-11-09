@@ -66,87 +66,119 @@
     </div>
   </div>
 
-  <script>
-    // ==== Firebase config ====
-    const firebaseConfig = {
-      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
-      authDomain: "amora-bytales.firebaseapp.com",
-      projectId: "amora-bytales",
-      storageBucket: "amora-bytales.firebasestorage.app",
-      messagingSenderId: "378090826699",
-      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
-      measurementId: "G-PB6EX99N2Y"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+<script>
+  // ==== Firebase config ====
+  const firebaseConfig = {
+    apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
+    authDomain: "amora-bytales.firebaseapp.com",
+    projectId: "amora-bytales",
+    storageBucket: "amora-bytales.firebasestorage.app",
+    messagingSenderId: "378090826699",
+    appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
+    measurementId: "G-PB6EX99N2Y"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-    // ==== DOM ====
-    const $ = id => document.getElementById(id);
-    const emailInp   = $('email');
-    const passInp    = $('password');
-    const signInBtn  = $('signInBtn');
-    const googleBtn  = $('googleSignIn');
-    const forgotLink = $('forgotPwd');
-    const msgBox     = $('message');
+  // ==== DOM ====
+  const $ = id => document.getElementById(id);
+  const emailInp   = $('email');
+  const passInp    = $('password');
+  const signInBtn  = $('signInBtn');
+  const googleBtn  = $('googleSignIn');
+  const forgotLink = $('forgotPwd');
+  const msgBox     = $('message');
 
-    // ==== Helpers ====
-    const showMsg = (txt, type = 'error') => {
-      msgBox.textContent = txt;
-      msgBox.className = `message ${type}`;
-      msgBox.style.display = 'block';
-      setTimeout(() => msgBox.style.display = 'none', 7000);
-    };
+  // ==== Helpers ====
+  const showMsg = (txt, type = 'error') => {
+    msgBox.textContent = txt;
+    msgBox.className = `message ${type}`;
+    msgBox.style.display = 'block';
+    setTimeout(() => msgBox.style.display = 'none', 8000);
+  };
 
-    // ==== Auto-redirect when already signed in ====
-    auth.onAuthStateChanged(user => {
-      if (user) window.location.href = 'home.html';
-    });
+  const goToRegister = () => window.location.href = 'register.html';
 
-    // ==== Email/Password Sign-in ====
-    signInBtn.addEventListener('click', () => {
-      const email = emailInp.value.trim();
-      const pass  = passInp.value;
+  // ==== Auto-redirect only for already-signed-in users ====
+  auth.onAuthStateChanged(user => {
+    if (user) window.location.href = 'home.html';
+  });
 
-      if (!email || !pass) return showMsg('Enter email and password.');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Invalid email.');
+  // ==== Email/Password Sign-in ====
+  signInBtn.addEventListener('click', async () => {
+    const email = emailInp.value.trim();
+    const pass  = passInp.value;
 
-      auth.signInWithEmailAndPassword(email, pass)
-        .catch(err => {
-          if (err.code === 'auth/user-not-found') showMsg('Email not registered.');
-          else if (err.code === 'auth/wrong-password') showMsg('Wrong password.');
-          else if (err.code === 'auth/too-many-requests') showMsg('Too many attempts – try later.');
-          else showMsg('Sign-in failed. Check connection.');
-        });
-    });
+    if (!email || !pass) return showMsg('Enter email and password.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Invalid email format.');
 
-    // ==== Google Sign-in ====
-    googleBtn.addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      provider.addScope('email profile');
-      auth.signInWithPopup(provider)
-        .catch(err => {
-          if (err.code === 'auth/popup-closed-by-user') return;
-          showMsg('Google sign-in failed.');
-        });
-    });
-
-    // ==== Forgot password ====
-    forgotLink.addEventListener('click', async e => {
-      e.preventDefault();
-      const email = prompt('Enter your registered email:');
-      if (!email) return;
-      const em = email.trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return showMsg('Invalid email.');
-
-      try {
-        const methods = await auth.fetchSignInMethodsForEmail(em);
-        if (!methods.length) return showMsg('Email not registered.');
-        await auth.sendPasswordResetEmail(em);
-        showMsg('Password reset link sent – check inbox/spam.', 'success');
-      } catch (err) {
-        showMsg('Failed to send reset link.');
+    try {
+      // First check if the email exists
+      const methods = await auth.fetchSignInMethodsForEmail(email);
+      if (methods.length === 0) {
+        showMsg('This email is not registered. Please register first.', 'error');
+        setTimeout(goToRegister, 2500);
+        return;
       }
-    });
-  </script>
+
+      // Email exists → try password
+      await auth.signInWithEmailAndPassword(email, pass);
+      // onAuthStateChanged will redirect
+    } catch (err) {
+      if (err.code === 'auth/wrong-password') {
+        showMsg('Incorrect password. Please try again.');
+      } else if (err.code === 'auth/too-many-requests') {
+        showMsg('Too many failed attempts. Try again later.');
+      } else {
+        showMsg('Sign-in failed. Please try again.');
+      }
+    }
+  });
+
+  // ==== Google Sign-in – ONLY if user already exists ====
+  googleBtn.addEventListener('click', async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email profile');
+
+    try {
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+
+      // Check if this Google email is already in our auth system
+      const methods = await auth.fetchSignInMethodsForEmail(user.email);
+      if (methods.length === 0) {
+        // User never signed up → sign them out + redirect to register
+        await auth.signOut();
+        showMsg('You must register with this Google account first.', 'error');
+        setTimeout(goToRegister, 2500);
+        return;
+      }
+
+      // User exists → proceed (onAuthStateChanged redirects)
+    } catch (err) {
+      if (err.code === 'auth/popup-closed-by-user') return;
+      showMsg('Google sign-in failed. Please try again.');
+    }
+  });
+
+  // ==== Forgot password ====
+  forgotLink.addEventListener('click', async e => {
+    e.preventDefault();
+    const email = prompt('Enter your registered email:');
+    if (!email) return;
+    const em = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return showMsg('Invalid email.');
+
+    try {
+      const methods = await auth.fetchSignInMethodsForEmail(em);
+      if (!methods.length) return showMsg('Email not registered. Please register first.', 'error');
+
+      await auth.sendPasswordResetEmail(em);
+      showMsg('Password reset link sent – check inbox/spam.', 'success');
+    } catch (err) {
+      showMsg('Failed to send reset link. Try again later.');
+    }
+  });
+</script>
 </body>
 </html>
