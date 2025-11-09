@@ -5,18 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AMORA – Sign In</title>
 
-  <!-- === SECURITY: CSP (FIXES GOOGLE SIGN-IN) === -->
+  <!-- === CSP: FULLY FIXED FOR GOOGLE === -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' https://www.gstatic.com https://accounts.google.com https://apis.google.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src https://fonts.gstatic.com;
     img-src 'self' data: https:;
-    connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+    connect-src 'self' 
+      https://identitytoolkit.googleapis.com 
+      https://securetoken.googleapis.com 
+      https://www.gstatic.com 
+      https://firestore.googleapis.com
+      https://www.googleapis.com;
     frame-src https://accounts.google.com;
   ">
 
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
 
   <!-- Firebase SDKs -->
@@ -25,138 +29,52 @@
 
   <style>
     :root {
-      --bg: #fdf8f9;
-      --card: #ffffff;
-      --text: #1a1a1a;
-      --light: #6b7280;
-      --accent: #e91e63;
-      --accent-h: #d81b5c;
-      --border: #e5e7eb;
-      --shadow: 0 12px 30px rgba(233,30,99,.15);
-      --radius: 16px;
-      --radius-sm: 12px;
+      --bg: #fdf8f9; --card: #fff; --text: #1a1a1a; --light: #6b7280;
+      --accent: #e91e63; --accent-h: #d81b5c; --border: #e5e7eb;
+      --shadow: 0 12px 30px rgba(233,30,99,.15); --radius: 16px; --radius-sm: 12px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem;
     }
     .container {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 2.5rem 2rem;
-      width: 100%;
-      max-width: 380px;
-      box-shadow: var(--shadow);
-      text-align: center;
+      background: var(--card); border-radius: var(--radius); padding: 2.5rem 2rem;
+      width: 100%; max-width: 380px; box-shadow: var(--shadow); text-align: center;
     }
     .logo {
-      width: 72px; height: 72px;
-      margin: 0 auto 1rem;
-      background: var(--accent);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 1.8rem;
-      box-shadow: 0 6px 20px rgba(233,30,99,.3);
+      width: 72px; height: 72px; margin: 0 auto 1rem; background: var(--accent);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 1.8rem; box-shadow: 0 6px 20px rgba(233,30,99,.3);
     }
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin-bottom: .5rem;
-    }
-    .subtitle {
-      font-size: .9375rem;
-      color: var(--light);
-      margin-bottom: 2rem;
-    }
+    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: .5rem; }
+    .subtitle { font-size: .9375rem; color: var(--light); margin-bottom: 2rem; }
     input {
-      width: 100%;
-      padding: 1rem 1.1rem;
-      margin-bottom: 1rem;
-      border: 1.8px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 1rem;
-      transition: .2s;
+      width: 100%; padding: 1rem 1.1rem; margin-bottom: 1rem;
+      border: 1.8px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 1rem; transition: .2s;
     }
-    input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(233,30,99,.15);
-    }
+    input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(233,30,99,.15); }
     .btn {
-      width: 100%;
-      padding: 1rem;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: .5rem;
-      transition: .2s;
+      width: 100%; padding: 1rem; background: var(--accent); color: #fff;
+      border: none; border-radius: var(--radius-sm); font-size: 1rem;
+      font-weight: 600; cursor: pointer; margin-top: .5rem; transition: .2s;
     }
     .btn:hover { background: var(--accent-h); }
     .google-btn {
-      background: #fff;
-      border: 1.8px solid var(--border);
-      color: #444;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .75rem;
+      background: #fff; border: 1.8px solid var(--border); color: #444;
+      display: flex; align-items: center; justify-content: center; gap: .75rem;
     }
-    .google-btn:hover {
-      border-color: var(--accent);
-      background: #fdf2f8;
-    }
+    .google-btn:hover { border-color: var(--accent); background: #fdf2f8; }
     .google-btn img { width: 18px; height: 18px; }
-    .divider {
-      margin: 1.75rem 0;
-      position: relative;
-      font-size: .875rem;
-      color: var(--light);
-    }
-    .divider::before {
-      content: '';
-      position: absolute;
-      top: 50%; left: 0; right: 0;
-      height: 1px;
-      background: var(--border);
-    }
-    .divider span {
-      background: var(--card);
-      padding: 0 1rem;
-    }
-    .links {
-      margin-top: 1.5rem;
-      font-size: .875rem;
-    }
-    .links a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-    }
+    .divider { margin: 1.75rem 0; position: relative; font-size: .875rem; color: var(--light); }
+    .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); }
+    .divider span { background: var(--card); padding: 0 1rem; }
+    .links { margin-top: 1.5rem; font-size: .875rem; }
+    .links a { color: var(--accent); text-decoration: none; font-weight: 600; }
     .links a:hover { text-decoration: underline; }
     .links span { color: #999; margin: 0 .5rem; }
-    .message {
-      margin: 1rem 0;
-      padding: .875rem;
-      border-radius: var(--radius-sm);
-      font-size: .875rem;
-      font-weight: 500;
-      display: none;
-    }
+    .message { margin: 1rem 0; padding: .875rem; border-radius: var(--radius-sm); font-size: .875rem; font-weight: 500; display: none; }
     .error { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
   </style>
 </head>
@@ -188,76 +106,7 @@
     </div>
   </div>
 
-  <script>
-    // === Firebase Config ===
-    const firebaseConfig = {
-      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
-      authDomain: "amora-bytales.firebaseapp.com",
-      projectId: "amora-bytales",
-      storageBucket: "amora-bytales.firebasestorage.app",
-      messagingSenderId: "378090826699",
-      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
-      measurementId: "G-PB6EX99N2Y"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    const emailIn = document.getElementById('email');
-    const passIn = document.getElementById('password');
-    const signInBtn = document.getElementById('signInBtn');
-    const googleBtn = document.getElementById('googleBtn');
-    const msg = document.getElementById('msg');
-    const forgot = document.getElementById('forgot');
-
-    function show(msgText) {
-      msg.textContent = msgText;
-      msg.style.display = 'block';
-      setTimeout(() => msg.style.display = 'none', 5000);
-    }
-
-    // Auto-redirect if signed in
-    auth.onAuthStateChanged(user => {
-      if (user) window.location.href = 'home.html';
-    });
-
-    // Email/Password Sign In
-    signInBtn.addEventListener('click', () => {
-      const email = emailIn.value.trim();
-      const pass = passIn.value;
-      if (!email || !pass) return show('Enter email and password.');
-
-      auth.signInWithEmailAndPassword(email, pass)
-        .catch(err => {
-          if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-            show('Invalid email or password.');
-          } else {
-            show('Sign in failed. Try again.');
-          }
-        });
-    });
-
-    // Google Sign In
-    googleBtn.addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .catch(err => {
-          if (err.code !== 'auth/popup-closed-by-user') {
-            show('Google sign-in failed.');
-          }
-        });
-    });
-
-    // Forgot Password
-    forgot.addEventListener('click', e => {
-      e.preventDefault();
-      const email = prompt('Enter your email:');
-      if (!email || !email.includes('@')) return show('Enter a valid email.');
-
-      auth.sendPasswordResetEmail(email)
-        .then(() => show('Reset link sent. Check inbox + spam.'))
-        .catch(() => show('No account found with this email.'));
-    });
-  </script>
+  <!-- === EXTERNAL JS === -->
+  <script src="auth.js"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AMORA – Create Account</title>
 
-  <!-- === CSP: FIXED FOR FIREBASE + NO INLINE + NO .MAP BLOCKS === -->
+  <!-- === SAME CSP === -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' https://www.gstatic.com https://accounts.google.com https://apis.google.com;
@@ -16,57 +16,32 @@
       https://identitytoolkit.googleapis.com 
       https://securetoken.googleapis.com 
       https://www.gstatic.com 
-      https://firestore.googleapis.com;
+      https://firestore.googleapis.com
+      https://www.googleapis.com;
     frame-src https://accounts.google.com;
   ">
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
   <style>
-    :root {
-      --bg: #fdf8f9; --card: #fff; --text: #1a1a1a; --light: #6b7280;
-      --accent: #e91e63; --accent-h: #d81b5c; --border: #e5e7eb;
-      --shadow: 0 12px 30px rgba(233,30,99,.15); --radius: 16px; --radius-sm: 12px;
-    }
+    /* SAME AS index.html — COPY STYLE FROM ABOVE */
+    :root { --bg: #fdf8f9; --card: #fff; --text: #1a1a1a; --light: #6b7280; --accent: #e91e63; --accent-h: #d81b5c; --border: #e5e7eb; --shadow: 0 12px 30px rgba(233,30,99,.15); --radius: 16px; --radius-sm: 12px; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
-      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem;
-    }
-    .container {
-      background: var(--card); border-radius: var(--radius); padding: 2.5rem 2rem;
-      width: 100%; max-width: 380px; box-shadow: var(--shadow); text-align: center;
-    }
-    .logo {
-      width: 72px; height: 72px; margin: 0 auto 1rem; background: var(--accent);
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      color: #fff; font-weight: 700; font-size: 1.8rem; box-shadow: 0 6px 20px rgba(233,30,99,.3);
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .container { background: var(--card); border-radius: var(--radius); padding: 2.5rem 2rem; width: 100%; max-width: 380px; box-shadow: var(--shadow); text-align: center; }
+    .logo { width: 72px; height: 72px; margin: 0 auto 1rem; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 1.8rem; box-shadow: 0 6px 20px rgba(233,30,99,.3); }
     h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: .5rem; }
     .subtitle { font-size: .9375rem; color: var(--light); margin-bottom: 1.5rem; }
-    input {
-      width: 100%; padding: 1rem 1.1rem; margin-bottom: 1rem;
-      border: 1.8px solid var(--border); border-radius: var(--radius-sm);
-      font-size: 1rem; transition: .2s;
-    }
+    input { width: 100%; padding: 1rem 1.1rem; margin-bottom: 1rem; border: 1.8px solid var(--border); border-radius: var(--radius-sm); font-size: 1rem; transition: .2s; }
     input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(233,30,99,.15); }
     .row { display: flex; gap: .75rem; }
     .row input { margin-bottom: 1rem; }
-    .btn {
-      width: 100%; padding: 1rem; background: var(--accent); color: #fff;
-      border: none; border-radius: var(--radius-sm); font-size: 1rem;
-      font-weight: 600; cursor: pointer; margin-top: .5rem; transition: .2s;
-    }
+    .btn { width: 100%; padding: 1rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: .5rem; transition: .2s; }
     .btn:hover { background: var(--accent-h); }
-    .google-btn {
-      background: #fff; border: 1.8px solid var(--border); color: #444;
-      display: flex; align-items: center; justify-content: center; gap: .75rem;
-    }
+    .google-btn { background: #fff; border: 1.8px solid var(--border); color: #444; display: flex; align-items: center; justify-content: center; gap: .75rem; }
     .google-btn:hover { border-color: var(--accent); background: #fdf2f8; }
     .google-btn img { width: 18px; height: 18px; }
     .divider { margin: 1.75rem 0; position: relative; font-size: .875rem; color: var(--light); }
@@ -113,7 +88,6 @@
     </div>
   </div>
 
-  <!-- === EXTERNAL JS (NO INLINE) === -->
   <script src="auth.js"></script>
 </body>
 </html>
