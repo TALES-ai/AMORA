@@ -98,7 +98,8 @@
       <label for="password">Password</label>
       <div class="password-wrapper">
         <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required />
-        <button type="button" class="eye-toggle"">View</button>
+        <!-- FIXED: Removed extra quote -->
+        <button type="button" class="eye-toggle" id="eyeToggle">View</button>
       </div>
     </div>
 
@@ -140,7 +141,7 @@
     const googleBtn = $('googleSignIn');
     const forgotLink = $('forgotPwd');
     const msgBox = $('message');
-    const eyeToggle = $('eyeToggle');
+    const eyeToggle = $('eyeToggle');  // Now works!
 
     // ==== Eye Toggle ====
     eyeToggle.addEventListener('click', () => {
@@ -158,12 +159,12 @@
     };
 
     const goToRegister = () => window.location.href = 'register.html';
-    const goToHome = () => window.location.href = 'home.html';  // FIXED: redirect to home.html
+    const goToHome = () => window.location.href = 'home.html';
 
     // ==== Auto-redirect if already signed in ====
     auth.onAuthStateChanged(user => {
       if (user) {
-        goToHome();  // Now redirects to home.html
+        goToHome();
       }
     });
 
@@ -176,9 +177,8 @@
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Invalid email format.');
 
       try {
-        // This will succeed if user exists and password is correct
-        const cred = await auth.signInWithEmailAndPassword(email, pass);
-        // onAuthStateChanged will redirect to home.html
+        await auth.signInWithEmailAndPassword(email, pass);
+        // Redirect handled by onAuthStateChanged
       } catch (err) {
         if (err.code === 'auth/user-not-found') {
           showMsg('This email is not registered. Please register first.', 'error');
@@ -193,7 +193,7 @@
       }
     });
 
-    // ==== Google Sign-in – ONLY if user already exists ====
+    // ==== Google Sign-in – ONLY if user exists ====
     googleBtn.addEventListener('click', async () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('email profile');
@@ -202,7 +202,6 @@
         const result = await auth.signInWithPopup(provider);
         const user = result.user;
 
-        // Check if email exists in Firebase Auth
         const methods = await auth.fetchSignInMethodsForEmail(user.email);
         if (methods.length === 0) {
           await auth.signOut();
@@ -210,8 +209,6 @@
           setTimeout(goToRegister, 2500);
           return;
         }
-
-        // User exists → proceed (onAuthStateChanged redirects to home.html)
       } catch (err) {
         if (err.code === 'auth/popup-closed-by-user') return;
         showMsg('Google sign-in failed. Please try again.');
