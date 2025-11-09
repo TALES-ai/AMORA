@@ -4,221 +4,86 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AMORA – Complete Profile</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com; connect-src 'self' https://firestore.googleapis.com;">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <style>
-    :root {
-      --bg: #fafafa;
-      --card: #ffffff;
-      --text: #1a1a1a;
-      --text-light: #6b7280;
-      --accent: #e91e63;
-      --accent-hover: #c81c56;
-      --border: #e5e7eb;
-      --shadow: 0 4px 12px rgba(0,0,0,0.08);
-      --radius: 12px;
-      --success: #10b981;
-      --error: #ef4444;
-      --success-bg: #ecfdf5;
-      --error-bg: #fef2f2;
-    }
+    /* Same style as register.html */
+    :root { --bg: #fafafa; --card: #ffffff; --text: #1a1a1a; --accent: #e91e63; --border: #e5e7eb; --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 12px; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-    }
-    .container {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 2.5rem 2rem;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: var(--shadow);
-    }
-    .logo {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 1.25rem;
-      background: var(--accent);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 1.75rem;
-      box-shadow: 0 4px 12px rgba(233, 30, 99, 0.2);
-    }
-    h1 {
-      font-size: 1.875rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      text-align: center;
-    }
-    .subtitle {
-      font-size: 0.9375rem;
-      color: var(--text-light);
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    .input-group {
-      margin-bottom: 1rem;
-      text-align: left;
-    }
-    label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-bottom: 0.5rem;
-      color: #374151;
-    }
-    input {
-      width: 100%;
-      padding: 0.875rem 1rem;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: all 0.2s ease;
-      background: var(--card);
-    }
-    input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.15);
-    }
-    .btn {
-      width: 100%;
-      padding: 0.875rem;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 1rem;
-    }
-    .btn:hover { background: var(--accent-hover); }
-    .message {
-      margin: 1rem 0;
-      padding: 0.875rem 1rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      text-align: left;
-      border: 1px solid transparent;
-    }
-    .success {
-      background: var(--success-bg);
-      color: var(--success);
-      border-color: #a7f3d0;
-    }
-    .error {
-      background: var(--error-bg);
-      color: var(--error);
-      border-color: #fecaca;
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .container { background: var(--card); border-radius: var(--radius); padding: 2.5rem 2rem; width: 100%; max-width: 420px; box-shadow: var(--shadow); }
+    .logo { width: 72px; height: 72px; margin: 0 auto 1.25rem; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.75rem; }
+    h1 { font-size: 1.875rem; font-weight: 600; text-align: center; }
+    .input-group { margin-bottom: 1rem; }
+    input { width: 100%; padding: 0.875rem 1rem; border: 1.5px solid var(--border); border-radius: 8px; }
+    .btn { width: 100%; padding: 0.875rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 500; margin-top: 1rem; cursor: pointer; }
+    .message { margin: 1rem 0; padding: 0.875rem; border-radius: 8px; font-size: 0.875rem; }
+    .success { background: #ecfdf5; color: #10b981; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="logo">A</div>
-    <h1>Almost There</h1>
-    <p class="subtitle">Add your date of birth and phone number to continue.</p>
-
+    <h1>Complete Your Profile</h1>
     <div class="input-group">
-      <label for="dob">Date of Birth</label>
+      <label>First Name</label>
+      <input type="text" id="firstName" placeholder="John" required />
+    </div>
+    <div class="input-group">
+      <label>Last Name</label>
+      <input type="text" id="lastName" placeholder="Doe" required />
+    </div>
+    <div class="input-group">
+      <label>Date of Birth</label>
       <input type="date" id="dob" required />
     </div>
     <div class="input-group">
-      <label for="phone">Phone Number</label>
+      <label>Phone</label>
       <input type="tel" id="phone" placeholder="+1234567890" required />
     </div>
-
-    <div id="message"></div>
-
-    <button id="saveBtn" class="btn">Save & Continue</button>
+    <div id="message" class="message"></div>
+    <button id="save" class="btn">Save & Continue</button>
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
-      authDomain: "amora-bytales.firebaseapp.com",
-      projectId: "amora-bytales",
-      storageBucket: "amora-bytales.firebasestorage.app",
-      messagingSenderId: "378090826699",
-      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
-      measurementId: "G-PB6EX99N2Y"
-    };
+    const firebaseConfig = { /* same */ };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    const dobIn = document.getElementById('dob');
-    const phoneIn = document.getElementById('phone');
-    const saveBtn = document.getElementById('saveBtn');
-    const messageBox = document.getElementById('message');
-
-    function showMessage(text, type = 'error') {
-      messageBox.textContent = text;
-      messageBox.className = `message ${type}`;
-      messageBox.style.display = 'block';
-      setTimeout(() => messageBox.style.display = 'none', 7000);
-    }
-
     auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        window.location.href = 'index.html';
-        return;
-      }
-
-      const doc = await db.collection('users').doc(user.uid).get();
-      if (doc.exists && doc.data().dob && doc.data().phone) {
-        window.location.href = 'home.html';
-      }
+      if (!user) window.location.href = 'index.html';
     });
 
-    saveBtn.onclick = async () => {
-      const dob = dobIn.value;
-      const phone = phoneIn.value.trim();
+    document.getElementById('save').onclick = async () => {
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const dob = document.getElementById('dob').value;
+      const phone = document.getElementById('phone').value.trim();
 
-      if (!dob || !phone) return showMessage('Please fill both fields.');
-      if (!/^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s/g, ''))) {
-        return showMessage('Please enter a valid phone number (e.g., +1234567890).');
-      }
+      if (!firstName || !lastName || !dob || !phone) return show('Fill all fields.');
 
-      const birth = new Date(dob);
-      const today = new Date();
-      let age = today.getFullYear() - birth.getFullYear();
-      const m = today.getMonth() - birth.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-      if (age < 18) return showMessage('You must be 18 or older.');
+      await db.collection('users').doc(auth.currentUser.uid).update({
+        'personal.firstName': firstName,
+        'personal.lastName': lastName,
+        'personal.dob': dob,
+        'personal.phone': phone
+      });
 
-      try {
-        await db.collection('users').doc(auth.currentUser.uid).set({
-          dob,
-          phone,
-          completedProfile: true
-        }, { merge: true });
+      await auth.currentUser.updateProfile({ displayName: `${firstName} ${lastName}` });
 
-        showMessage('Profile saved! Welcome to AMORA.', 'success');
-        setTimeout(() => window.location.href = 'home.html', 1500);
-      } catch {
-        showMessage('Failed to save. Try again.');
-      }
+      show('Profile saved!', 'success');
+      setTimeout(() => window.location.href = 'home.html', 1500);
     };
+
+    function show(t, type = 'error') {
+      const msg = document.getElementById('message');
+      msg.textContent = t;
+      msg.className = `message ${type}`;
+    }
   </script>
 </body>
 </html>
