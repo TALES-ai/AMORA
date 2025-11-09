@@ -4,23 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AMORA – Sign In</title>
-
-  <!-- === ADD THIS CSP === -->
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' https://www.gstatic.com https://accounts.google.com https://apis.google.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src https://fonts.gstatic.com;
-    img-src 'self' data: https:;
-    connect-src 'self' 
-      https://identitytoolkit.googleapis.com 
-      https://securetoken.googleapis.com 
-      https://www.gstatic.com 
-      https://firestore.googleapis.com
-      https://www.googleapis.com;
-    frame-src 'self' https://accounts.google.com https://amora-bytales.firebaseapp.com;
-  ">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -202,25 +185,33 @@
   </style>
 </head>
 <body>
+
   <div class="container">
     <div class="logo">A</div>
     <h1>AMORA</h1>
     <p class="subtitle">Welcome back. Sign in to continue.</p>
+
     <div class="input-group">
       <label for="email">Email Address</label>
       <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required />
     </div>
+
     <div class="input-group">
       <label for="password">Password</label>
       <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required />
     </div>
+
     <div id="message"></div>
+
     <button id="signInBtn" class="btn">Sign In</button>
+
     <div class="divider"><span>or</span></div>
+
     <button id="googleSignIn" class="btn btn-google">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
       Continue with Google
     </button>
+
     <div class="links">
       <a href="register.html">No account? Register</a>
       <a href="#" id="forgotPwd">Forgot password?</a>
@@ -238,16 +229,17 @@
       appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
       measurementId: "G-PB6EX99N2Y"
     };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
     // === DOM Elements ===
-    const emailInput = document.getElementById('email');
+    const emailInput    = document.getElementById('email');
     const passwordInput = document.getElementById('password');
-    const signInBtn = document.getElementById('signInBtn');
-    const googleBtn = document.getElementById('googleSignIn');
-    const forgotLink = document.getElementById('forgotPwd');
-    const messageBox = document.getElementById('message');
+    const signInBtn     = document.getElementById('signInBtn');
+    const googleBtn     = document.getElementById('googleSignIn');
+    const forgotLink    = document.getElementById('forgotPwd');
+    const messageBox    = document.getElementById('message');
 
     // === Message Handler ===
     function showMessage(text, type = 'error') {
@@ -270,15 +262,21 @@
     signInBtn.addEventListener('click', () => {
       const email = emailInput.value.trim();
       const password = passwordInput.value;
+
       if (!email || !password) {
         showMessage('Please enter both email and password.');
         return;
       }
+
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         showMessage('Please enter a valid email address.');
         return;
       }
+
       auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          // Success → redirect via onAuthStateChanged
+        })
         .catch(err => {
           if (err.code === 'auth/user-not-found') {
             showMessage('This email is not registered. Please register to create an account.');
@@ -294,42 +292,56 @@
         });
     });
 
-    // === GOOGLE SIGN-IN: NOW WORKS ===
+    // === Google Sign-In ===
     googleBtn.addEventListener('click', () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('email');
       provider.addScope('profile');
+
       auth.signInWithPopup(provider)
         .then(() => {
-          // Redirect handled by onAuthStateChanged
+          // Redirect handled automatically
         })
         .catch(err => {
-          console.error("Google Sign-In Error:", err); // DEBUG
           if (err.code === 'auth/popup-closed-by-user') return;
-          showMessage('Google sign-in failed. Please try again.');
+          showMessage('AMORA: Google sign-in failed. Please try again.');
         });
     });
 
-    // === Forgot Password ===
+    // === Forgot Password – ACCURATE & PROFESSIONAL ===
     forgotLink.addEventListener('click', async (e) => {
       e.preventDefault();
+
       const email = prompt('Enter your registered email address:');
       if (!email) return;
+
       const trimmed = email.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
         showMessage('Please enter a valid email address.');
         return;
       }
+
       try {
+        // Use Firebase's built-in method to check existence
         const methods = await auth.fetchSignInMethodsForEmail(trimmed);
+        
         if (methods.length === 0) {
           showMessage('This email is not registered with AMORA. Please register to create an account.');
           return;
         }
+
+        // Only send if user exists
         await auth.sendPasswordResetEmail(trimmed);
-        showMessage('AMORA: Password reset link sent successfully. Check your inbox and spam folder.', 'success');
+        showMessage(
+          'AMORA: Password reset link sent successfully. Check your inbox and spam folder.',
+          'success'
+        );
       } catch (err) {
-        showMessage('AMORA: Failed to send reset link. Please try again later.');
+        if (err.code === 'auth/invalid-email') {
+          showMessage('Please enter a valid email address.');
+        } else {
+          showMessage('AMORA: Failed to send reset link. Please try again later.');
+        }
       }
     });
   </script>
