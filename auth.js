@@ -1,4 +1,4 @@
-// auth.js — SHARED & BULLETPROOF
+// auth.js
 const firebaseConfig = {
   apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
   authDomain: "amora-bytales.firebaseapp.com",
@@ -13,109 +13,100 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// === GLOBAL REDIRECTION ===
-auth.onAuthStateChanged(async (user) => {
-  if (!user) {
-    if (!location.pathname.includes('index.html') && !location.pathname.includes('register.html')) {
-      location.href = 'index.html';
-    }
-    return;
+const emailIn = document.getElementById('email');
+const firstNameIn = document.getElementById('firstName');
+const lastNameIn = document.getElementById('lastName');
+const otherNamesIn = document.getElementById('otherNames');
+const dobIn = document.getElementById('dob');
+const phoneIn = document.getElementById('phone');
+const passwordIn = document.getElementById('password');
+const confirmIn = document.getElementById('confirmPassword');
+const registerBtn = document.getElementById('registerBtn');
+const googleBtn = document.getElementById('googleSignUp');
+const messageBox = document.getElementById('message');
+
+function showMessage(text, type = 'error') {
+  messageBox.textContent = text;
+  messageBox.className = `message ${type}`;
+  messageBox.style.display = 'block';
+  setTimeout(() => messageBox.style.display = 'none', 7000);
+}
+
+function isAdult(dob) {
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age >= 18;
+}
+
+function isStrongPassword(pw) {
+  return pw.length >= 8 && /[A-Z]/.test(pw) && /[0-9]/.test(pw);
+}
+
+registerBtn.addEventListener('click', async () => {
+  const email = emailIn.value.trim();
+  const password = passwordIn.value;
+  const confirm = confirmIn.value;
+  const firstName = firstNameIn.value.trim();
+  const lastName = lastNameIn.value.trim();
+  const otherNames = otherNamesIn.value.trim();
+  const dob = dobIn.value;
+  const phone = phoneIn.value.trim();
+
+  if (!email || !password || !firstName || !lastName || !dob || !phone) {
+    return showMessage('Please fill in all required fields.');
   }
+  if (password !== confirm) return showMessage('Passwords do not match.');
+  if (!isStrongPassword(password)) return showMessage('Password must be 8+ chars with uppercase + number.');
+  if (!isAdult(dob)) return showMessage('You must be 18 or older.');
+  if (!/^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s/g, ''))) return showMessage('Invalid phone.');
 
-  const path = location.pathname;
-  const doc = await db.collection('users').doc(user.uid).get();
-  const data = doc.exists ? doc.data() : {};
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    const user = cred.user;
 
-  if (!data.dob || !data.phone) {
-    if (!path.includes('complete-profile.html')) location.href = 'complete-profile.html';
-    return;
+    await db.collection('users').doc(user.uid).set({
+      personal: {
+        firstName,
+        lastName,
+        otherNames: otherNames || '',
+        dob,
+        phone,
+        email
+      },
+      contacts: {},
+      settings: { notifications: true }
+    });
+
+    await user.updateProfile({ displayName: `${firstName} ${lastName}` });
+    await user.sendEmailVerification();
+
+    showMessage('Account created! Check email to verify.', 'success');
+    setTimeout(() => window.location.href = 'verify.html', 2000);
+  } catch (err) {
+    showMessage(err.code === 'auth/email-already-in-use' ? 'Email in use.' : 'Registration failed.');
   }
-
-  if (!user.emailVerified) {
-    if (!path.includes('verify.html')) location.href = 'verify.html';
-    return;
-  }
-
-  if (!path.includes('home.html')) location.href = 'home.html';
 });
 
-// === GOOGLE SIGN-IN (WORKS ON index & register) ===
-function initGoogleSignIn() {
-  const googleBtn = document.getElementById('googleBtn');
-  if (!googleBtn) return;
-
-  googleBtn.onclick = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-      .then(async (result) => {
-        const user = result.user;
-        if (result.additionalUserInfo.isNewUser) {
-          const p = result.additionalUserInfo.profile;
-          await db.collection('users').doc(user.uid).set({
-            email: user.email,
-            firstName: p.given_name || '',
-            lastName: p.family_name || '',
-            fullName: `${p.given_name || ''} ${p.family_name || ''}`.trim(),
-            dob: '',
-            phone: '',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            verified: true,
-            onboarded: false
-          }, { merge: true });
-        }
-        // Let global redirect handle flow
-      })
-      .catch(err => {
-        if (err.code !== 'auth/popup-closed-by-user') {
-          const msg = document.getElementById('msg');
-          if (msg) {
-            msg.textContent = 'Google sign-in failed.';
-            msg.style.display = 'block';
-          }
-        }
-      });
-  };
-}
-
-// === RUN PAGE-SPECIFIC LOGIC ===
-const page = location.pathname;
-
-if (page.includes('index.html')) {
-  const emailIn = document.getElementById('email');
-  const passIn = document.getElementById('password');
-  const signInBtn = document.getElementById('signInBtn');
-  const msg = document.getElementById('msg');
-  const forgot = document.getElementById('forgot');
-
-  signInBtn.onclick = () => {
-    const email = emailIn.value.trim();
-    const pass = passIn.value;
-    if (!email || !pass) return showMsg('Enter email and password.');
-    auth.signInWithEmailAndPassword(email, pass)
-      .catch(err => showMsg(err.code.includes('wrong-password') || err.code.includes('user-not-found') 
-        ? 'Invalid email or password.' : 'Sign in failed.'));
-  };
-
-  forgot.onclick = (e) => {
-    e.preventDefault();
-    const email = prompt('Enter your email:');
-    if (!email || !email.includes('@')) return showMsg('Enter a valid email.');
-    auth.sendPasswordResetEmail(email)
-      .then(() => showMsg('Reset link sent. Check inbox + spam.'))
-      .catch(() => showMsg('No account found.'));
-  };
-
-  function showMsg(text) {
-    msg.textContent = text;
-    msg.style.display = 'block';
-    setTimeout(() => msg.style.display = 'none', 5000);
-  }
-
-  initGoogleSignIn();
-}
-
-if (page.includes('register.html')) {
-  // Register logic here (same as before)
-  // ... (use your existing register code)
-  initGoogleSignIn();
-}
+googleBtn.addEventListener('click', () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.addScope('email');
+  provider.addScope('profile');
+  auth.signInWithPopup(provider)
+    .then(async (result) => {
+      const user = result.user;
+      if (result.additionalUserInfo.isNewUser) {
+        await db.collection('users').doc(user.uid).set({
+          personal: { email: user.email },
+          contacts: {},
+          settings: { notifications: true }
+        });
+        window.location.href = 'complete-profile.html';
+      } else {
+        window.location.href = 'home.html';
+      }
+    })
+    .catch(() => showMessage('Google sign-up failed.'));
+});
