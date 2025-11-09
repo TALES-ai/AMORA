@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AMORA – Home</title>
+  <meta name="description" content="Your AMORA dashboard – start matching!">
+
+  <!-- ==== CSP ==== -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' https://www.gstatic.com https://accounts.google.com https://apis.google.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src https://fonts.gstatic.com;
+    img-src 'self' data: https:;
+    connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+    frame-src https://accounts.google.com;
+  ">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root{
+      --bg:#fdf8f9;--card:#fff;--text:#1a1a1a;--light:#6b7280;
+      --accent:#e91e63;--accent-h:#d81b5c;--accent-l:#fdf2f8;
+      --border:#e5e7eb;--shadow:0 10px 30px rgba(233,30,99,.12);
+      --radius:16px;--radius-sm:12px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',system-ui;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+    header{background:linear-gradient(135deg,#fdf2f8,#f8f9fd);padding:1.5rem;text-align:center;border-bottom:1px solid var(--border);}
+    .logo{width:56px;height:56px;margin:0 auto .75rem;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.5rem;box-shadow:0 6px 20px rgba(233,30,99,.3);}
+    h1{font-size:1.75rem;font-weight:700;margin-bottom:.25rem;}
+    .user{font-weight:600;color:var(--accent);}
+    main{flex:1;padding:2rem 1rem;display:flex;flex-direction:column;align-items:center;}
+    .card{background:var(--card);border-radius:var(--radius);padding:2rem;width:100%;max-width:480px;box-shadow:var(--shadow);text-align:center;}
+    .btn{width:100%;padding:1rem;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:1.0625rem;font-weight:600;cursor:pointer;margin-top:1rem;transition:.25s;}
+    .btn:hover{background:var(--accent-h);transform:translateY(-1px);}
+    .logout{margin-top:1.5rem;color:var(--light);font-size:.875rem;cursor:pointer;}
+    .logout:hover{color:var(--accent);}
+    .message{margin:1rem 0;padding:.75rem .75rem;border-radius:var(--radius-sm);font-size:.9375rem;font-weight:500;display:none;}
+    .success{background:#ecfdf5;color:#10b981;border:1px solid #a7f3d0;}
+    .error{background:#fef2f2;color:#ef4444;border:1px solid #fecaca;}
+    @media(min-width:769px){
+      header{padding:2rem;}
+      .logo{width:68px;height:68px;font-size:1.75rem;}
+      h1{font-size:2rem;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">A</div>
+    <h1>Welcome, <span class="user" id="displayName">…</span></h1>
+  </header>
+
+  <main>
+    <div class="card">
+      <p>Ready to meet someone special?</p>
+      <button id="startBtn" class="btn">Start Matching</button>
+
+      <div id="msg" class="message"></div>
+
+      <div class="logout" id="logout">Sign out</div>
+    </div>
+  </main>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
+      authDomain: "amora-bytales.firebaseapp.com",
+      projectId: "amora-bytales",
+      storageBucket: "amora-bytales.firebasestorage.app",
+      messagingSenderId: "378090826699",
+      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
+      measurementId: "G-PB6EX99N2Y"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    const nameEl = document.getElementById('displayName');
+    const msgEl  = document.getElementById('msg');
+    const logout = document.getElementById('logout');
+
+    function show(msg,type='error'){
+      msgEl.textContent=msg;
+      msgEl.className=`message ${type}`;
+      msgEl.style.display='block';
+      setTimeout(()=>msgEl.style.display='none',5000);
+    }
+
+    auth.onAuthStateChanged(async user=>{
+      if(!user){ window.location.href='index.html'; return; }
+      nameEl.textContent = user.displayName || user.email.split('@')[0];
+      if(!user.emailVerified){
+        show('Please verify your email first.','error');
+        setTimeout(()=>window.location.href='verify.html',2000);
+      }
+    });
+
+    logout.addEventListener('click',()=>auth.signOut().then(()=>window.location.href='index.html'));
+
+    document.getElementById('startBtn').addEventListener('click',()=>{
+      // Placeholder – you’ll replace with your swipe UI later
+      show('Swipe UI coming soon!','success');
+    });
+  </script>
+</body>
+</html>
