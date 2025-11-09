@@ -4,40 +4,88 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AMORA – Sign In</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
   <style>
-    :root{--bg:#fafafa;--card:#fff;--text:#1a1a1a;--text-light:#6b7280;--accent:#e91e63;--accent-hover:#c81c56;--border:#e5e7eb;--shadow:0 4px 12px rgba(0,0,0,.08);--radius:12px;--success:#10b981;--error:#ef4444;--success-bg:#ecfdf5;--error-bg:#fef2f2}
+    :root{
+      --bg:#fdf2f8;--card:#ffffff;--text:#1a1a1a;--text-light:#6b7280;--accent:#e91e63;--accent-hover:#c81c56;
+      --border:#e5e7eb;--shadow:0 12px 32px rgba(0,0,0,0.1);--radius:16px;--success:#10b981;--error:#ef4444;
+      --success-bg:#ecfdf5;--error-bg:#fef2f2;--input-height:52px;
+    }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
-    .container{background:var(--card);border-radius:var(--radius);padding:2.5rem 2rem;width:100%;max-width:400px;box-shadow:var(--shadow);text-align:center}
-    .logo{width:72px;height:72px;margin:0 auto 1.25rem;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:1.75rem}
-    h1{font-size:1.875rem;font-weight:600;margin-bottom:.5rem}
-    .subtitle{font-size:.9375rem;color:var(--text-light);margin-bottom:2rem}
-    .input-group{margin-bottom:1rem;text-align:left}
-    label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.5rem;color:#374151}
-    input{width:100%;padding:.875rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-size:1rem;transition:.2s}
-    input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(233,30,99,.15)}
-    .btn{width:100%;padding:.875rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:500;cursor:pointer;margin-top:.5rem}
+    body{
+      font-family:'Inter',sans-serif;background:linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+      color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;
+      line-height:1.6;
+    }
+    .container{
+      background:var(--card);border-radius:var(--radius);padding:3.5rem 3rem;width:100%;max-width:480px;
+      box-shadow:var(--shadow);text-align:center;position:relative;overflow:hidden;
+    }
+    .container::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:6px;
+      background:linear-gradient(90deg, #e91e63, #ec4899, #f43f5e);
+    }
+    .logo-img{
+      width:100px;height:100px;margin:0 auto 1.5rem;border-radius:50%;object-fit:cover;
+      box-shadow:0 8px 24px rgba(233,30,99,0.3);border:5px solid #fff;
+    }
+    h1{font-size:2.25rem;font-weight:700;margin-bottom:.5rem;letter-spacing:-0.03em}
+    .subtitle{font-size:1.05rem;color:var(--text-light);margin-bottom:2.5rem;max-width:90%}
+    .input-group{position:relative;margin-bottom:1.25rem;text-align:left}
+    label{display:block;font-size:.9rem;font-weight:600;margin-bottom:.5rem;color:#374151}
+    input{
+      width:100%;padding:0 1rem;height:var(--input-height);border:1.5px solid var(--border);
+      border-radius:12px;font-size:1rem;transition:all .25s;background:var(--card);font-family:inherit;
+    }
+    input:focus{
+      outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(233,30,99,.15);
+    }
+    .password-wrapper{position:relative}
+    .eye-toggle{
+      position:absolute;right:12px;top:50%;transform:translateY(-50%);
+      background:none;border:none;cursor:pointer;font-size:1.25rem;color:#9ca3af;
+    }
+    .btn{
+      width:100%;padding:1rem;background:var(--accent);color:#fff;border:none;border-radius:12px;
+      font-weight:600;font-size:1.05rem;cursor:pointer;transition:.25s;margin-top:1.5rem;height:var(--input-height);
+      display:flex;align-items:center;justify-content:center;gap:.5rem;
+    }
     .btn:hover{background:var(--accent-hover)}
-    .btn-google{background:transparent;border:1.5px solid var(--border);color:#444;display:flex;align-items:center;justify-content:center;gap:.75rem}
-    .divider{margin:1.75rem 0;position:relative;font-size:.875rem;color:var(--text-light)}
-    .divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border)}
-    .divider span{background:var(--card);padding:0 1rem}
-    .links{margin-top:1.5rem;font-size:.875rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
-    .links a{color:var(--accent);text-decoration:none;font-weight:500}
+    .btn-google{
+      background:transparent;border:1.5px solid var(--border);color:#444;
+    }
+    .btn-google img{width:22px;height:22px}
+    .divider{
+      margin:2.25rem 0;position:relative;font-size:.9rem;color:var(--text-light);font-weight:500;
+    }
+    .divider::before{
+      content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border);
+    }
+    .divider span{background:var(--card);padding:0 1.5rem}
+    .links{margin-top:2rem;font-size:.95rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+    .links a{color:var(--accent);text-decoration:none;font-weight:600}
     .links a:hover{text-decoration:underline}
-    .message{margin:1rem 0;padding:.875rem 1rem;border-radius:8px;font-size:.875rem;font-weight:500;display:none;border:1px solid transparent}
+    .message{
+      margin:1.25rem 0;padding:1rem 1.25rem;border-radius:12px;font-size:.9rem;font-weight:500;
+      display:none;border:1px solid transparent;text-align:left;
+    }
     .success{background:var(--success-bg);color:var(--success);border-color:#a7f3d0}
     .error{background:var(--error-bg);color:var(--error);border-color:#fecaca}
+    @media (max-width: 768px){
+      .container{padding:2.5rem 2rem;max-width:100%}
+      .logo-img{width:80px;height:80px}
+      h1{font-size:2rem}
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">A</div>
+    <img src="logo.jpg" alt="AMORA Logo" class="logo-img">
+
     <h1>AMORA</h1>
     <p class="subtitle">Welcome back. Sign in to continue.</p>
 
@@ -45,19 +93,23 @@
       <label for="email">Email Address</label>
       <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required />
     </div>
+
     <div class="input-group">
       <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required />
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required />
+        <button type="button" class="eye-toggle"">View</button>
+      </div>
     </div>
 
     <div id="message" class="message"></div>
 
     <button id="signInBtn" class="btn">Sign In</button>
 
-    <div class="divider"><span>or</span></div>
+    <div class="divider"><span>or continue with</span></div>
     <button id="googleSignIn" class="btn btn-google">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-      Continue with Google
+      Google
     </button>
 
     <div class="links">
@@ -66,119 +118,125 @@
     </div>
   </div>
 
-<script>
-  // ==== Firebase config ====
-  const firebaseConfig = {
-    apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
-    authDomain: "amora-bytales.firebaseapp.com",
-    projectId: "amora-bytales",
-    storageBucket: "amora-bytales.firebasestorage.app",
-    messagingSenderId: "378090826699",
-    appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
-    measurementId: "G-PB6EX99N2Y"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+  <script>
+    // ==== Firebase config ====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
+      authDomain: "amora-bytales.firebaseapp.com",
+      projectId: "amora-bytales",
+      storageBucket: "amora-bytales.firebasestorage.app",
+      messagingSenderId: "378090826699",
+      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
+      measurementId: "G-PB6EX99N2Y"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-  // ==== DOM ====
-  const $ = id => document.getElementById(id);
-  const emailInp   = $('email');
-  const passInp    = $('password');
-  const signInBtn  = $('signInBtn');
-  const googleBtn  = $('googleSignIn');
-  const forgotLink = $('forgotPwd');
-  const msgBox     = $('message');
+    // ==== DOM ====
+    const $ = id => document.getElementById(id);
+    const emailInp = $('email');
+    const passInp = $('password');
+    const signInBtn = $('signInBtn');
+    const googleBtn = $('googleSignIn');
+    const forgotLink = $('forgotPwd');
+    const msgBox = $('message');
+    const eyeToggle = $('eyeToggle');
 
-  // ==== Helpers ====
-  const showMsg = (txt, type = 'error') => {
-    msgBox.textContent = txt;
-    msgBox.className = `message ${type}`;
-    msgBox.style.display = 'block';
-    setTimeout(() => msgBox.style.display = 'none', 8000);
-  };
+    // ==== Eye Toggle ====
+    eyeToggle.addEventListener('click', () => {
+      const type = passInp.type === 'password' ? 'text' : 'password';
+      passInp.type = type;
+      eyeToggle.textContent = type === 'password' ? 'View' : 'Hide';
+    });
 
-  const goToRegister = () => window.location.href = 'register.html';
+    // ==== Helpers ====
+    const showMsg = (txt, type = 'error') => {
+      msgBox.textContent = txt;
+      msgBox.className = `message ${type}`;
+      msgBox.style.display = 'block';
+      setTimeout(() => msgBox.style.display = 'none', 8000);
+    };
 
-  // ==== Auto-redirect only for already-signed-in users ====
-  auth.onAuthStateChanged(user => {
-    if (user) window.location.href = 'home.html';
-  });
+    const goToRegister = () => window.location.href = 'register.html';
+    const goToHome = () => window.location.href = 'home.html';  // FIXED: redirect to home.html
 
-  // ==== Email/Password Sign-in ====
-  signInBtn.addEventListener('click', async () => {
-    const email = emailInp.value.trim();
-    const pass  = passInp.value;
-
-    if (!email || !pass) return showMsg('Enter email and password.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Invalid email format.');
-
-    try {
-      // First check if the email exists
-      const methods = await auth.fetchSignInMethodsForEmail(email);
-      if (methods.length === 0) {
-        showMsg('This email is not registered. Please register first.', 'error');
-        setTimeout(goToRegister, 2500);
-        return;
+    // ==== Auto-redirect if already signed in ====
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        goToHome();  // Now redirects to home.html
       }
+    });
 
-      // Email exists → try password
-      await auth.signInWithEmailAndPassword(email, pass);
-      // onAuthStateChanged will redirect
-    } catch (err) {
-      if (err.code === 'auth/wrong-password') {
-        showMsg('Incorrect password. Please try again.');
-      } else if (err.code === 'auth/too-many-requests') {
-        showMsg('Too many failed attempts. Try again later.');
-      } else {
-        showMsg('Sign-in failed. Please try again.');
+    // ==== Email/Password Sign-in ====
+    signInBtn.addEventListener('click', async () => {
+      const email = emailInp.value.trim().toLowerCase();
+      const pass = passInp.value;
+
+      if (!email || !pass) return showMsg('Enter email and password.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Invalid email format.');
+
+      try {
+        // This will succeed if user exists and password is correct
+        const cred = await auth.signInWithEmailAndPassword(email, pass);
+        // onAuthStateChanged will redirect to home.html
+      } catch (err) {
+        if (err.code === 'auth/user-not-found') {
+          showMsg('This email is not registered. Please register first.', 'error');
+          setTimeout(goToRegister, 2500);
+        } else if (err.code === 'auth/wrong-password') {
+          showMsg('Incorrect password. Please try again.');
+        } else if (err.code === 'auth/too-many-requests') {
+          showMsg('Too many failed attempts. Try again later.');
+        } else {
+          showMsg('Sign-in failed. Please try again.');
+        }
       }
-    }
-  });
+    });
 
-  // ==== Google Sign-in – ONLY if user already exists ====
-  googleBtn.addEventListener('click', async () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('email profile');
+    // ==== Google Sign-in – ONLY if user already exists ====
+    googleBtn.addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('email profile');
 
-    try {
-      const result = await auth.signInWithPopup(provider);
-      const user = result.user;
+      try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
 
-      // Check if this Google email is already in our auth system
-      const methods = await auth.fetchSignInMethodsForEmail(user.email);
-      if (methods.length === 0) {
-        // User never signed up → sign them out + redirect to register
-        await auth.signOut();
-        showMsg('You must register with this Google account first.', 'error');
-        setTimeout(goToRegister, 2500);
-        return;
+        // Check if email exists in Firebase Auth
+        const methods = await auth.fetchSignInMethodsForEmail(user.email);
+        if (methods.length === 0) {
+          await auth.signOut();
+          showMsg('You must register with this Google account first.', 'error');
+          setTimeout(goToRegister, 2500);
+          return;
+        }
+
+        // User exists → proceed (onAuthStateChanged redirects to home.html)
+      } catch (err) {
+        if (err.code === 'auth/popup-closed-by-user') return;
+        showMsg('Google sign-in failed. Please try again.');
       }
+    });
 
-      // User exists → proceed (onAuthStateChanged redirects)
-    } catch (err) {
-      if (err.code === 'auth/popup-closed-by-user') return;
-      showMsg('Google sign-in failed. Please try again.');
-    }
-  });
+    // ==== Forgot Password ====
+    forgotLink.addEventListener('click', async e => {
+      e.preventDefault();
+      const email = prompt('Enter your registered email:');
+      if (!email) return;
+      const em = email.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return showMsg('Invalid email.');
 
-  // ==== Forgot password ====
-  forgotLink.addEventListener('click', async e => {
-    e.preventDefault();
-    const email = prompt('Enter your registered email:');
-    if (!email) return;
-    const em = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return showMsg('Invalid email.');
-
-    try {
-      const methods = await auth.fetchSignInMethodsForEmail(em);
-      if (!methods.length) return showMsg('Email not registered. Please register first.', 'error');
-
-      await auth.sendPasswordResetEmail(em);
-      showMsg('Password reset link sent – check inbox/spam.', 'success');
-    } catch (err) {
-      showMsg('Failed to send reset link. Try again later.');
-    }
-  });
-</script>
+      try {
+        await auth.sendPasswordResetEmail(em);
+        showMsg('Password reset link sent – check inbox/spam.', 'success');
+      } catch (err) {
+        if (err.code === 'auth/user-not-found') {
+          showMsg('Email not registered. Please register first.', 'error');
+        } else {
+          showMsg('Failed to send reset link. Try again later.');
+        }
+      }
+    });
+  </script>
 </body>
 </html>

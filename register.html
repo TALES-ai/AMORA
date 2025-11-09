@@ -4,77 +4,174 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AMORA – Register</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 
   <style>
-    :root{--bg:#fafafa;--card:#fff;--text:#1a1a1a;--text-light:#6b7280;--accent:#e91e63;--accent-hover:#c81c56;--border:#e5e7eb;--shadow:0 4px 12px rgba(0,0,0,.08);--radius:12px;--success:#10b981;--error:#ef4444;--success-bg:#ecfdf5;--error-bg:#fef2f2}
+    :root{
+      --bg:#fdf2f8;--card:#ffffff;--text:#1a1a1a;--text-light:#6b7280;--accent:#e91e63;--accent-hover:#c81c56;
+      --border:#e5e7eb;--shadow:0 12px 32px rgba(0,0,0,0.1);--radius:16px;--success:#10b981;--error:#ef4444;
+      --success-bg:#ecfdf5;--error-bg:#fef2f2;--input-height:52px;
+    }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
-    .container{background:var(--card);border-radius:var(--radius);padding:2.5rem 2rem;width:100%;max-width:420px;box-shadow:var(--shadow);text-align:center}
-    .logo{width:72px;height:72px;margin:0 auto 1.25rem;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:1.75rem}
-    h1{font-size:1.875rem;font-weight:600;margin-bottom:.5rem}
-    .subtitle{font-size:.9375rem;color:var(--text-light);margin-bottom:2rem}
-    .input-group{margin-bottom:1rem;text-align:left}
-    label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.5rem;color:#374151}
-    input{width:100%;padding:.875rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-size:1rem;transition:.2s}
-    input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(233,30,99,.15)}
-    .btn{width:100%;padding:.875rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:500;cursor:pointer;margin-top:.5rem}
+    body{
+      font-family:'Inter',sans-serif;background:linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+      color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;
+      line-height:1.6;
+    }
+    .container{
+      background:var(--card);border-radius:var(--radius);padding:3.5rem 3rem;width:100%;max-width:520px;
+      box-shadow:var(--shadow);text-align:center;position:relative;overflow:hidden;
+    }
+    .container::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:6px;
+      background:linear-gradient(90deg, #e91e63, #ec4899, #f43f5e);
+    }
+    .logo-img{
+      width:100px;height:100px;margin:0 auto 1.5rem;border-radius:50%;object-fit:cover;
+      box-shadow:0 8px 24px rgba(233,30,99,0.3);border:5px solid #fff;
+    }
+    h1{font-size:2.25rem;font-weight:700;margin-bottom:.5rem;letter-spacing:-0.03em}
+    .subtitle{font-size:1.05rem;color:var(--text-light);margin-bottom:2.5rem;max-width:90%}
+    .form-grid{
+      display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;
+    }
+    .form-grid .full{grid-column:1 / -1}
+    .input-group{position:relative;margin-bottom:1rem;text-align:left}
+    label{display:block;font-size:.9rem;font-weight:600;margin-bottom:.5rem;color:#374151}
+    input, select{
+      width:100%;padding:0 1rem;height:var(--input-height);border:1.5px solid var(--border);
+      border-radius:12px;font-size:1rem;transition:all .25s;background:var(--card);font-family:inherit;
+    }
+    input:focus, select:focus{
+      outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(233,30,99,.15);
+    }
+    select{
+      appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+      background-position:right 1rem center;background-repeat:no-repeat;background-size:12px;
+      padding-right:2.75rem;
+    }
+    .password-wrapper{
+      position:relative;
+    }
+    .eye-toggle{
+      position:absolute;right:12px;top:50%;transform:translateY(-50%);
+      background:none;border:none;cursor:pointer;font-size:1.25rem;color:#9ca3af;
+    }
+    .btn{
+      width:100%;padding:1rem;background:var(--accent);color:#fff;border:none;border-radius:12px;
+      font-weight:600;font-size:1.05rem;cursor:pointer;transition:.25s;margin-top:1.5rem;height:var(--input-height);
+      display:flex;align-items:center;justify-content:center;gap:.5rem;
+    }
     .btn:hover{background:var(--accent-hover)}
-    .btn-google{background:transparent;border:1.5px solid var(--border);color:#444;display:flex;align-items:center;justify-content:center;gap:.75rem}
-    .divider{margin:1.75rem 0;position:relative;font-size:.875rem;color:var(--text-light)}
-    .divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border)}
-    .divider span{background:var(--card);padding:0 1rem}
-    .links{margin-top:1.5rem;font-size:.875rem}
-    .links a{color:var(--accent);text-decoration:none;font-weight:500}
+    .btn-google{
+      background:transparent;border:1.5px solid var(--border);color:#444;
+    }
+    .btn-google img{width:22px;height:22px}
+    .divider{
+      margin:2.25rem 0;position:relative;font-size:.9rem;color:var(--text-light);font-weight:500;
+    }
+    .divider::before{
+      content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border);
+    }
+    .divider span{background:var(--card);padding:0 1.5rem}
+    .links{margin-top:2rem;font-size:.95rem}
+    .links a{color:var(--accent);text-decoration:none;font-weight:600}
     .links a:hover{text-decoration:underline}
-    .message{margin:1rem 0;padding:.875rem 1rem;border-radius:8px;font-size:.875rem;font-weight:500;display:none;border:1px solid transparent}
+    .message{
+      margin:1.25rem 0;padding:1rem 1.25rem;border-radius:12px;font-size:.9rem;font-weight:500;
+      display:none;border:1px solid transparent;text-align:left;
+    }
     .success{background:var(--success-bg);color:var(--success);border-color:#a7f3d0}
     .error{background:var(--error-bg);color:var(--error);border-color:#fecaca}
+    .premium-note{
+      font-size:0.8rem;color:#9ca3af;margin-top:0.3rem;font-style:italic;
+    }
+    @media (max-width: 768px){
+      .container{padding:2.5rem 2rem;max-width:100%}
+      .form-grid{grid-template-columns:1fr}
+      .logo-img{width:80px;height:80px}
+      h1{font-size:2rem}
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">A</div>
-    <h1>AMORA</h1>
-    <p class="subtitle">Create your account to get started.</p>
+    <!-- Only logo.jpg – no fallback -->
+    <img src="logo.jpg" alt="AMORA Logo" class="logo-img">
 
-    <div class="input-group">
-      <label for="email">Email Address</label>
-      <input type="email" id="email" placeholder="you@example.com" required />
-    </div>
-    <div class="input-group">
-      <label for="firstName">First Name</label>
-      <input type="text" id="firstName" placeholder="John" required />
-    </div>
-    <div class="input-group">
-      <label for="surname">Surname</label>
-      <input type="text" id="surname" placeholder="Doe" required />
-    </div>
-    <div class="input-group">
-      <label for="otherName">Other Name (Optional)</label>
-      <input type="text" id="otherName" placeholder="Middle name" />
-    </div>
-    <div class="input-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Min. 6 characters" required />
+    <h1>AMORA</h1>
+    <p class="subtitle">Create your account and start meaningful connections today.</p>
+
+    <div class="form-grid">
+      <div class="input-group">
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" placeholder="John" required />
+      </div>
+      <div class="input-group">
+        <label for="surname">Surname</label>
+        <input type="text" id="surname" placeholder="Doe" required />
+      </div>
+      <div class="input-group">
+        <label for="middleName">Middle Name <small>(optional)</small></label>
+        <input type="text" id="middleName" placeholder="Lee" />
+      </div>
+      <div class="input-group">
+        <label for="gender">Gender</label>
+        <select id="gender" required>
+          <option value="" disabled selected>Select gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+          <option value="prefer-not-to-say">Prefer not to say</option>
+        </select>
+      </div>
+      <div class="input-group full">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="you@example.com" required />
+      </div>
+      <div class="input-group full">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" placeholder="+1 555 000 1234" required />
+      </div>
+      <div class="input-group">
+        <label for="accountType">Account Type</label>
+        <input type="text" id="accountType" value="Free Tier" readonly style="background:#f9fafb;color:#374151;">
+        <div class="premium-note">Premium plans coming soon!</div>
+      </div>
+      <div class="input-group">
+        <label for="reason">Looking For</label>
+        <select id="reason" required>
+          <option value="" disabled selected>Select reason</option>
+          <option value="friendship">Friendship</option>
+          <option value="dating">Dating</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+      <div class="input-group full">
+        <label for="password">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="Min. 6 characters" required />
+          <button type="button" class="eye-toggle" id="eyeToggle">View</button>
+        </div>
+      </div>
     </div>
 
     <div id="message" class="message"></div>
 
     <button id="registerBtn" class="btn">Create Account</button>
 
-    <div class="divider"><span>or</span></div>
+    <div class="divider"><span>or continue with</span></div>
     <button id="googleRegister" class="btn btn-google">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-      Continue with Google
+      Google
     </button>
 
     <div class="links">
-      <a href="signin.html">Already have an account? Sign in</a>
+      <a href="index.html">Already have an account? Sign in</a>
     </div>
   </div>
 
@@ -88,7 +185,7 @@
       messagingSenderId: "378090826699",
       appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
       measurementId: "G-PB6EX99N2Y",
-      databaseURL: "https://amora-bytales-default-rtdb.firebaseio.com" // Add this!
+      databaseURL: "https://amora-bytales-default-rtdb.firebaseio.com"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -96,14 +193,27 @@
 
     // ==== DOM ====
     const $ = id => document.getElementById(id);
-    const emailInp = $('email');
-    const firstNameInp = $('firstName');
-    const surnameInp = $('surname');
-    const otherNameInp = $('otherName');
-    const passInp = $('password');
+    const inputs = {
+      email: $('email'),
+      firstName: $('firstName'),
+      surname: $('surname'),
+      middleName: $('middleName'),
+      gender: $('gender'),
+      phone: $('phone'),
+      reason: $('reason'),
+      password: $('password')
+    };
     const registerBtn = $('registerBtn');
     const googleBtn = $('googleRegister');
     const msgBox = $('message');
+    const eyeToggle = $('eyeToggle');
+
+    // ==== Eye Toggle ====
+    eyeToggle.addEventListener('click', () => {
+      const type = inputs.password.type === 'password' ? 'text' : 'password';
+      inputs.password.type = type;
+      eyeToggle.textContent = type === 'password' ? 'View' : 'Hide';
+    });
 
     // ==== Helpers ====
     const showMsg = (txt, type = 'error') => {
@@ -113,77 +223,73 @@
       setTimeout(() => msgBox.style.display = 'none', 8000);
     };
 
-    const goToHome = () => window.location.href = 'home.html';
-    const goToSignIn = () => window.location.href = 'signin.html';
+    const goToIndex = () => window.location.href = 'index.html';
 
-    // ==== Check Auth State (for verification redirect) ====
+    // ==== Auto-redirect if verified ====
     auth.onAuthStateChanged(async user => {
-      if (user) {
-        if (user.emailVerified) {
-          goToHome();
-        } else {
-          showMsg('Please verify your email. Check your inbox (and spam).', 'error');
-        }
+      if (user && user.emailVerified) {
+        goToIndex();
+      } else if (user && !user.emailVerified) {
+        showMsg('Please verify your email. Check inbox & spam.', 'error');
       }
     });
 
-    // ==== Email/Password Registration ====
-    registerBtn.addEventListener('click', async () => {
-      const email = emailInp.value.trim();
-      const pass = passInp.value;
-      const firstName = firstNameInp.value.trim();
-      const surname = surnameInp.value.trim();
-      const otherName = otherNameInp.value.trim();
+    // ==== Validate Phone ====
+    const isValidPhone = (phone) => /^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s/g, ''));
 
-      if (!email || !pass || !firstName || !surname) {
-        return showMsg('All required fields must be filled.');
+    // ==== Register with Email ====
+    registerBtn.addEventListener('click', async () => {
+      const data = {
+        email: inputs.email.value.trim(),
+        password: inputs.password.value,
+        firstName: inputs.firstName.value.trim(),
+        surname: inputs.surname.value.trim(),
+        middleName: inputs.middleName.value.trim(),
+        gender: inputs.gender.value,
+        phone: inputs.phone.value.trim(),
+        reason: inputs.reason.value,
+        accountType: 'free'  // Fixed
+      };
+
+      if (!data.email || !data.password || !data.firstName || !data.surname || !data.gender || !data.phone || !data.reason) {
+        return showMsg('Please fill all required fields.');
       }
-      if (pass.length < 6) {
-        return showMsg('Password must be at least 6 characters.');
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return showMsg('Invalid email format.');
-      }
+      if (data.password.length < 6) return showMsg('Password must be 6+ characters.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return showMsg('Invalid email.');
+      if (!isValidPhone(data.phone)) return showMsg('Enter valid phone (e.g. +1234567890).');
 
       try {
-        // Check if email already exists
-        const methods = await auth.fetchSignInMethodsForEmail(email);
+        const methods = await auth.fetchSignInMethodsForEmail(data.email);
         if (methods.length > 0) {
-          showMsg('This email is already registered. Please sign in.');
-          setTimeout(goToSignIn, 2000);
+          showMsg('Email already registered. Sign in instead.');
+          setTimeout(goToIndex, 2000);
           return;
         }
 
-        // Create user
-        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        const cred = await auth.createUserWithEmailAndPassword(data.email, data.password);
         const user = cred.user;
 
-        // Save profile to Realtime DB
         await db.ref('users/' + user.uid).set({
-          email: user.email,
-          firstName,
-          surname,
-          otherName: otherName || '',
+          ...data,
+          uid: user.uid,
+          emailVerified: false,
           createdAt: firebase.database.ServerValue.TIMESTAMP,
-          emailVerified: false
+          provider: 'email'
         });
 
-        // Send verification email
         await user.sendEmailVerification();
-        showMsg('Account created! Please check your email to verify your account.', 'success');
+        showMsg('Account created! Check your email to verify.', 'success');
 
       } catch (err) {
         if (err.code === 'auth/email-already-in-use') {
-          showMsg('Email already in use. Try signing in.');
-        } else if (err.code === 'auth/weak-password') {
-          showMsg('Password is too weak.');
+          showMsg('Email already in use.');
         } else {
           showMsg('Registration failed. Try again.');
         }
       }
     });
 
-    // ==== Google Registration – Only if email NOT registered ====
+    // ==== Google Registration ====
     googleBtn.addEventListener('click', async () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('email profile');
@@ -193,43 +299,34 @@
         const user = result.user;
         const email = user.email;
 
-        // Check if this email is already in Firebase Auth
         const methods = await auth.fetchSignInMethodsForEmail(email);
-
-        if (methods.length > 0) {
-          // Email already exists → either link or block
-          if (methods.includes('password') || methods.includes('google.com')) {
-            showMsg('This Google account is already linked or registered. Sign in instead.');
-            await auth.signOut();
-            setTimeout(goToSignIn, 2000);
-            return;
-          }
+        if (methods.length > 0 && !methods.includes('google.com')) {
+          await auth.signOut();
+          showMsg('Email already registered with another method. Sign in to link.');
+          setTimeout(goToIndex, 2000);
+          return;
         }
 
-        // New Google user → save profile
+        const nameParts = (user.displayName || '').split(' ');
+        const firstName = nameParts[0] || '';
+        const surname = nameParts.slice(1).join(' ') || '';
+
         await db.ref('users/' + user.uid).set({
           email: user.email,
-          firstName: user.displayName.split(' ')[0] || '',
-          surname: user.displayName.split(' ').slice(1).join(' ') || '',
-          otherName: '',
+          firstName, surname,
+          middleName: '', gender: '', phone: '', accountType: 'free', reason: '',
+          uid: user.uid,
+          emailVerified: user.emailVerified,
           createdAt: firebase.database.ServerValue.TIMESTAMP,
-          emailVerified: user.emailVerified
+          provider: 'google'
         });
 
-        if (user.emailVerified) {
-          goToHome();
-        } else {
-          showMsg('Google account linked. Verifying...', 'success');
-        }
+        if (user.emailVerified) goToIndex();
+        else showMsg('Google account ready. Verifying...', 'success');
 
       } catch (err) {
         if (err.code === 'auth/popup-closed-by-user') return;
-        if (err.code === 'auth/account-exists-with-different-credential') {
-          showMsg('This email is already registered with another method. Sign in to link.');
-          setTimeout(goToSignIn, 2000);
-        } else {
-          showMsg('Google registration failed.');
-        }
+        showMsg('Google sign-up failed.');
       }
     });
   </script>
