@@ -4,80 +4,145 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AMORA – Verify Email</title>
-
-  <!-- === CSP: FULLY COMPATIBLE === -->
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' https://www.gstatic.com https://accounts.google.com https://apis.google.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src https://fonts.gstatic.com;
-    img-src 'self' data: https:;
-    connect-src 'self' 
-      https://identitytoolkit.googleapis.com 
-      https://securetoken.googleapis.com 
-      https://www.gstatic.com 
-      https://firestore.googleapis.com;
-    frame-src https://accounts.google.com;
-  ">
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap Nurse" rel="stylesheet">
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics-compat.js"></script>
   <style>
     :root {
-      --bg: #fdf8f9; --card: #fff; --text: #1a1a1a; --light: #6b7280;
-      --accent: #e91e63; --accent-h: #d81b5c; --border: #e5e7eb;
-      --shadow: 0 12px 30px rgba(233,30,99,.15); --radius: 16px; --radius-sm: 12px;
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --text-light: #6b7280;
+      --accent: #e91e63;
+      --accent-hover: #c81c56;
+      --border: #e5e7eb;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --radius: 12px;
+      --success: #10b981;
+      --error: #ef4444;
+      --success-bg: #ecfdf5;
+      --error-bg: #fef2f2;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
-      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      line-height: 1.5;
     }
     .container {
-      background: var(--card); border-radius: var(--radius); padding: 2.5rem 2rem;
-      width: 100%; max-width: 380px; box-shadow: var(--shadow); text-align: center;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow);
+      text-align: center;
     }
     .icon {
-      width: 80px; height: 80px; margin: 0 auto 1rem;
-      background: #fdf2f8; border-radius: 50%; display: flex;
-      align-items: center; justify-content: center; font-size: 2.5rem; color: var(--accent);
-      box-shadow: 0 6px 20px rgba(233,30,99,.2);
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.25rem;
+      background: #fdf2f8;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: var(--accent);
+      box-shadow: 0 4px 12px rgba(233, 30, 99, 0.15);
     }
-    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: .5rem; }
-    .subtitle { font-size: .9375rem; color: var(--light); margin-bottom: 1.5rem; }
-    .email { font-weight: 600; color: var(--accent); font-size: 1rem; }
+    h1 {
+      font-size: 1.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      font-size: 0.9375rem;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+    }
+    .email {
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 1rem;
+      word-break: break-all;
+    }
     .btn {
-      width: 100%; padding: 1rem; background: var(--accent); color: #fff;
-      border: none; border-radius: var(--radius-sm); font-size: 1rem;
-      font-weight: 600; cursor: pointer; margin: 1rem 0; transition: .2s;
+      width: 100%;
+      padding: 0.875rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 1rem;
     }
-    .btn:hover { background: var(--accent-h); }
+    .btn:hover { background: var(--accent-hover); }
     .btn-secondary {
-      background: #fff; border: 1.8px solid var(--border); color: var(--text);
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: #444;
     }
-    .btn-secondary:hover { border-color: var(--accent); background: #fdf2f8; }
-    .message { margin: 1rem 0; padding: .875rem; border-radius: var(--radius-sm); font-size: .875rem; font-weight: 500; display: none; }
-    .success { background: #ecfdf5; color: #10b981; border: 1px solid #a7f3d0; }
-    .error { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
-    .info { margin-top: 1.5rem; font-size: .8125rem; color: var(--light); }
-    .info a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      background: #fdf2f8;
+    }
+    .message {
+      margin: 1rem 0;
+      padding: 0.875rem 1rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-align: left;
+      border: 1px solid transparent;
+    }
+    .success {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: #a7f3d0;
+    }
+    .error {
+      background: var(--error-bg);
+      color: var(--error);
+      border-color: #fecaca;
+    }
+    .info {
+      font-size: 0.8125rem;
+      color: var(--text-light);
+      margin-top: 1.5rem;
+      line-height: 1.6;
+    }
+    .info a {
+      color: var(--accent);
+      font-weight: 500;
+      text-decoration: none;
+    }
     .info a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-
   <div class="container">
     <div class="icon">Check</div>
     <h1>Check Your Email</h1>
     <p class="subtitle">We sent a verification link to</p>
     <p class="email" id="emailDisplay">your@email.com</p>
 
-    <div id="msg" class="message error"></div>
+    <div id="message"></div>
 
     <button id="resendBtn" class="btn">Resend Email</button>
     <button id="continueBtn" class="btn btn-secondary">I’ve Verified</button>
@@ -87,7 +152,79 @@
     </p>
   </div>
 
-  <!-- === EXTERNAL JS === -->
-  <script src="auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
+      authDomain: "amora-bytales.firebaseapp.com",
+      projectId: "amora-bytales",
+      storageBucket: "amora-bytales.firebasestorage.app",
+      messagingSenderId: "378090826699",
+      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
+      measurementId: "G-PB6EX99N2Y"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const emailDisplay = document.getElementById('emailDisplay');
+    const resendBtn = document.getElementById('resendBtn');
+    const continueBtn = document.getElementById('continueBtn');
+    const resendLink = document.getElementById('resendLink');
+    const messageBox = document.getElementById('message');
+
+    function showMessage(text, type = 'error') {
+      messageBox.textContent = text;
+      messageBox.className = `message ${type}`;
+      messageBox.style.display = 'block';
+      setTimeout(() => messageBox.style.display = 'none', 7000);
+    }
+
+    // Show email
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        emailDisplay.textContent = user.email;
+        if (user.emailVerified) {
+          window.location.href = 'home.html';
+        }
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+
+    // Resend email
+    async function resend() {
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        await user.sendEmailVerification();
+        showMessage('Verification email sent! Check inbox + spam.', 'success');
+      } catch {
+        showMessage('Failed to resend. Try again later.');
+      }
+    }
+
+    resendBtn.onclick = resend;
+    resendLink.onclick = (e) => { e.preventDefault(); resend(); };
+
+    // Continue button
+    continueBtn.onclick = () => {
+      auth.currentUser.reload().then(() => {
+        if (auth.currentUser.emailVerified) {
+          window.location.href = 'home.html';
+        } else {
+          showMessage('Email not verified yet. Please check your inbox.');
+        }
+      });
+    };
+
+    // Auto-check every 3 seconds
+    setInterval(() => {
+      auth.currentUser?.reload().then(() => {
+        if (auth.currentUser?.emailVerified) {
+          showMessage('Email verified! Redirecting...', 'success');
+          setTimeout(() => window.location.href = 'home.html', 1500);
+        }
+      });
+    }, 3000);
+  </script>
 </body>
 </html>
