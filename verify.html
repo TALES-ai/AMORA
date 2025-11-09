@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AMORA – Verify Your Email</title>
+  <meta name="description" content="Verify your email to activate your AMORA account and start connecting.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics-compat.js"></script>
+
+  <style>
+    :root {
+      --bg: #fdf8f9;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --text-light: #6b7280;
+      --accent: #e91e63;
+      --accent-hover: #d81b5c;
+      --accent-light: #fdf2f8;
+      --border: #e5e7eb;
+      --shadow: 0 10px 30px rgba(233, 30, 99, 0.12);
+      --shadow-lg: 0 20px 50px rgba(233, 30, 99, 0.18);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --success: #10b981;
+      --error: #ef4444;
+      --success-bg: #ecfdf5;
+      --error-bg: #fef2f2;
+      --transition: all 0.3s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* === DESKTOP LAYOUT === */
+    .desktop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: linear-gradient(135deg, #fdf2f8 0%, #f8f9fd 100%);
+    }
+    .desktop .container {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 3.5rem 3rem;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .desktop .container::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #e91e63, #f06292);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .desktop .icon {
+      width: 90px; height: 90px;
+      margin: 0 auto 1.75rem;
+      background: var(--accent-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: var(--accent);
+      box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2);
+    }
+
+    .desktop h1 {
+      font-size: 2.125rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: -0.04em;
+    }
+    .desktop p {
+      font-size: 1.0625rem;
+      color: var(--text-light);
+      margin-bottom: 1.5rem;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .desktop .email {
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 1.125rem;
+    }
+
+    .desktop .btn {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1.0625rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.25);
+      margin: 1rem 0;
+    }
+    .desktop .btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(233, 30, 99, 0.35);
+    }
+    .desktop .btn-secondary {
+      background: transparent;
+      border: 1.8px solid var(--border);
+      color: var(--text);
+      box-shadow: none;
+    }
+    .desktop .btn-secondary:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .desktop .message {
+      margin: 1.5rem 0;
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9375rem;
+      font-weight: 500;
+    }
+    .desktop .success { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+    .desktop .error   { background: var(--error-bg);   color: var(--error);   border: 1px solid #fecaca; }
+
+    .desktop .info {
+      margin-top: 2rem;
+      font-size: 0.8125rem;
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+
+    /* === MOBILE LAYOUT === */
+    .mobile {
+      display: none;
+      min-height: 100vh;
+      background: var(--card);
+      flex-direction: column;
+    }
+    .mobile-header {
+      padding: 2.5rem 1.5rem 2rem;
+      text-align: center;
+      background: linear-gradient(135deg, #fdf2f8 0%, #f8f9fd 100%);
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+    }
+    .mobile-header .icon {
+      width: 80px; height: 80px;
+      margin: 0 auto 1.25rem;
+      background: var(--accent-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.25rem;
+      color: var(--accent);
+      box-shadow: 0 6px 20px rgba(233, 30, 99, 0.25);
+    }
+    .mobile-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    .mobile-header p {
+      font-size: 1rem;
+      color: var(--text-light);
+    }
+    .mobile-header .email {
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 1.125rem;
+      margin-top: 0.5rem;
+    }
+
+    .mobile-form {
+      padding: 2rem 1.5rem;
+      flex-grow: 1;
+      text-align: center;
+    }
+    .mobile .btn {
+      width: 100%;
+      padding: 1.125rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1.125rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0;
+      box-shadow: 0 6px 20px rgba(233, 30, 99, 0.3);
+    }
+    .mobile .btn:hover { background: var(--accent-hover); }
+    .mobile .btn-secondary {
+      background: #fff;
+      border: 1.8px solid var(--border);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .mobile .btn-secondary:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .mobile .message {
+      margin: 1.5rem 0;
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9375rem;
+      font-weight: 500;
+    }
+
+    .mobile .info {
+      margin-top: 2rem;
+      font-size: 0.8125rem;
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+
+    @media (max-width: 768px) {
+      .desktop { display: none; }
+      .mobile { display: flex; }
+    }
+    @media (min-width: 769px) {
+      .mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- === DESKTOP: VERIFY EMAIL === -->
+  <div class="desktop">
+    <div class="container">
+      <div class="icon">Check</div>
+      <h1>Check Your Email</h1>
+      <p>We sent a verification link to</p>
+      <p class="email" id="email-d">your@email.com</p>
+      <p>Click the link in the email to activate your AMORA account.</p>
+
+      <div id="message-d"></div>
+
+      <button id="resendBtn-d" class="btn">Resend Email</button>
+      <button id="continueBtn-d" class="btn btn-secondary">I’ve Verified</button>
+
+      <p class="info">
+        Didn’t receive it? Check your spam folder or <a href="#" id="resendLink-d" style="color:var(--accent);font-weight:600;">resend</a>.
+      </p>
+    </div>
+  </div>
+
+  <!-- === MOBILE: VERIFY EMAIL === -->
+  <div class="mobile">
+    <div class="mobile-header">
+      <div class="icon">Check</div>
+      <h1>Check Your Email</h1>
+      <p>Verification link sent to</p>
+      <p class="email" id="email-m">your@email.com</p>
+    </div>
+
+    <div class="mobile-form">
+      <p>Tap the link in the email to activate your account.</p>
+
+      <div id="message-m"></div>
+
+      <button id="resendBtn-m" class="btn">Resend Email</button>
+      <button id="continueBtn-m" class="btn btn-secondary">I’ve Verified</button>
+
+      <p class="info">
+        No email? Check spam or <a href="#" id="resendLink-m" style="color:var(--accent);font-weight:600;">resend</a>.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
+      authDomain: "amora-bytales.firebaseapp.com",
+      projectId: "amora-bytales",
+      storageBucket: "amora-bytales.firebasestorage.app",
+      messagingSenderId: "378090826699",
+      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
+      measurementId: "G-PB6EX99N2Y"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function initVerify(isMobile) {
+      const suffix = isMobile ? '-m' : '-d';
+      const emailEl = document.getElementById('email' + suffix);
+      const resendBtn = document.getElementById('resendBtn' + suffix);
+      const continueBtn = document.getElementById('continueBtn' + suffix);
+      const resendLink = document.getElementById('resendLink' + suffix);
+      const messageBox = document.getElementById('message' + suffix);
+
+      function showMessage(text, type = 'error') {
+        messageBox.textContent = text;
+        messageBox.className = `message ${type}`;
+        messageBox.style.display = 'block';
+        setTimeout(() => messageBox.style.display = 'none', 6000);
+      }
+
+      // Display email
+      const user = auth.currentUser;
+      if (user && user.email) {
+        emailEl.textContent = user.email;
+      }
+
+      // Resend email
+      async function resend() {
+        if (!user) {
+          showMessage('Please sign in again.');
+          setTimeout(() => window.location.href = 'index.html', 2000);
+          return;
+        }
+        try {
+          await user.sendEmailVerification();
+          showMessage('Verification email sent!', 'success');
+        } catch (err) {
+          showMessage('Failed to resend. Try again later.');
+        }
+      }
+
+      resendBtn.addEventListener('click', resend);
+      resendLink.addEventListener('click', (e) => { e.preventDefault(); resend(); });
+
+      // Continue button
+      continueBtn.addEventListener('click', () => {
+        if (user && user.emailVerified) {
+          window.location.href = 'home.html';
+        } else {
+          showMessage('Please verify your email first.');
+          auth.currentUser.reload().then(() => {
+            if (auth.currentUser.emailVerified) {
+              window.location.href = 'home.html';
+            }
+          });
+        }
+      });
+
+      // Auto-check verification
+      const handle = setInterval(() => {
+        auth.currentUser?.reload().then(() => {
+          if (auth.currentUser?.emailVerified) {
+            clearInterval(handle);
+            showMessage('Email verified! Redirecting...', 'success');
+            setTimeout(() => window.location.href = 'home.html', 1500);
+          }
+        });
+      }, 3000);
+    }
+
+    // Auto-redirect if already verified
+    auth.onAuthStateChanged(user => {
+      if (user && user.emailVerified) {
+        window.location.href = 'home.html';
+      } else if (user) {
+        initVerify(false);
+        initVerify(true);
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>

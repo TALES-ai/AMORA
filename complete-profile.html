@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AMORA – Complete Your Profile</title>
+  <meta name="description" content="Finish setting up your AMORA profile to start matching.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --bg: #fdf8f9;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --text-light: #6b7280;
+      --accent: #e91e63;
+      --accent-hover: #d81b5c;
+      --accent-light: #fdf2f8;
+      --border: #e5e7eb;
+      --shadow: 0 10px 30px rgba(233, 30, 99, 0.12);
+      --shadow-lg: 0 20px 50px rgba(233, 30, 99, 0.18);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --success: #10b981;
+      --error: #ef4444;
+      --success-bg: #ecfdf5;
+      --error-bg: #fef2f2;
+      --transition: all 0.3s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* === DESKTOP LAYOUT === */
+    .desktop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: linear-gradient(135deg, #fdf2f8 0%, #f8f9fd 100%);
+    }
+    .desktop .container {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 3rem;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+    .desktop .container::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #e91e63, #f06292);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .desktop .logo {
+      width: 78px; height: 78px;
+      margin: 0 auto 1.5rem;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 1.875rem;
+      box-shadow: 0 8px 25px rgba(233, 30, 99, 0.3);
+    }
+
+    .desktop h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+    .desktop .subtitle {
+      font-size: 1rem;
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .desktop .input-group {
+      margin-bottom: 1.25rem;
+    }
+    .desktop label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #374151;
+    }
+    .desktop input {
+      width: 100%;
+      padding: 1rem 1.125rem;
+      border: 1.8px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      background: var(--card);
+    }
+    .desktop input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(233, 30, 99, 0.15);
+    }
+
+    .desktop .btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1.0625rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.25);
+    }
+    .desktop .btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+
+    .desktop .message {
+      margin: 1.25rem 0;
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9375rem;
+      font-weight: 500;
+    }
+    .desktop .success { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+
+    /* === MOBILE LAYOUT === */
+    .mobile {
+      display: none;
+      min-height: 100vh;
+      background: var(--card);
+      flex-direction: column;
+    }
+    .mobile-header {
+      padding: 2rem 1.5rem;
+      text-align: center;
+      background: linear-gradient(135deg, #fdf2f8 0%, #f8f9fd 100%);
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+    }
+    .mobile-header .logo {
+      width: 68px; height: 68px;
+      margin: 0 auto 1rem;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 1.75rem;
+      box-shadow: 0 6px 20px rgba(233, 30, 99, 0.3);
+    }
+    .mobile-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .mobile-header p {
+      font-size: 0.9375rem;
+      color: var(--text-light);
+    }
+
+    .mobile-form {
+      padding: 2rem 1.5rem;
+      flex-grow: 1;
+    }
+    .mobile .input-group {
+      margin-bottom: 1.5rem;
+    }
+    .mobile label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #374151;
+    }
+    .mobile input {
+      width: 100%;
+      padding: 1rem 1.125rem;
+      border: 1.8px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 1.0625rem;
+    }
+    .mobile input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(233, 30, 99, 0.15);
+    }
+
+    .mobile .btn {
+      width: 100%;
+      padding: 1.125rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1.125rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+      box-shadow: 0 6px 20px rgba(233, 30, 99, 0.3);
+    }
+    .mobile .btn:hover { background: var(--accent-hover); }
+
+    .mobile .message {
+      margin: 1.25rem 0;
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9375rem;
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      .desktop { display: none; }
+      .mobile { display: flex; }
+    }
+    @media (min-width: 769px) {
+      .mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- === DESKTOP: COMPLETE PROFILE === -->
+  <div class="desktop">
+    <div class="container">
+      <div class="logo">A</div>
+      <h1>Complete Your Profile</h1>
+      <p class="subtitle">Just a few more details to help you find meaningful connections.</p>
+
+      <div class="input-group">
+        <label for="dob-d">Date of Birth</label>
+        <input type="date" id="dob-d" required />
+      </div>
+
+      <div class="input-group">
+        <label for="phone-d">Phone Number</label>
+        <input type="tel" id="phone-d" placeholder="+1234567890" required />
+      </div>
+
+      <div id="message-d"></div>
+
+      <button id="saveBtn-d" class="btn">Save & Continue</button>
+    </div>
+  </div>
+
+  <!-- === MOBILE: COMPLETE PROFILE === -->
+  <div class="mobile">
+    <div class="mobile-header">
+      <div class="logo">A</div>
+      <h1>Complete Profile</h1>
+      <p>Help us match you with real people.</p>
+    </div>
+
+    <div class="mobile-form">
+      <div class="input-group">
+        <label for="dob-m">Birthday</label>
+        <input type="date" id="dob-m" required />
+      </div>
+
+      <div class="input-group">
+        <label for="phone-m">Phone</label>
+        <input type="tel" id="phone-m" placeholder="+1234567890" required />
+      </div>
+
+      <div id="message-m"></div>
+
+      <button id="saveBtn-m" class="btn">Save & Continue</button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
+      authDomain: "amora-bytales.firebaseapp.com",
+      projectId: "amora-bytales",
+      storageBucket: "amora-bytales.firebasestorage.app",
+      messagingSenderId: "378090826699",
+      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
+      measurementId: "G-PB6EX99N2Y"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    function initComplete(isMobile) {
+      const suffix = isMobile ? '-m' : '-d';
+      const dobIn = document.getElementById('dob' + suffix);
+      const phoneIn = document.getElementById('phone' + suffix);
+      const saveBtn = document.getElementById('saveBtn' + suffix);
+      const messageBox = document.getElementById('message' + suffix);
+
+      function showMessage(text, type = 'success') {
+        messageBox.textContent = text;
+        messageBox.className = `message ${type}`;
+        messageBox.style.display = 'block';
+        setTimeout(() => messageBox.style.display = 'none', 5000);
+      }
+
+      function isAdult(dob) {
+        const birth = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+        return age >= 18;
+      }
+
+      saveBtn.addEventListener('click', async () => {
+        const dob = dobIn.value;
+        const phone = phoneIn.value.trim();
+
+        if (!dob || !phone) {
+          showMessage('Please fill in all fields.', 'error');
+          return;
+        }
+
+        if (!isAdult(dob)) {
+          showMessage('You must be 18 or older.', 'error');
+          return;
+        }
+
+        if (!/^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s/g, ''))) {
+          showMessage('Valid phone number required.', 'error');
+          return;
+        }
+
+        const user = auth.currentUser;
+        if (!user) {
+          window.location.href = 'index.html';
+          return;
+        }
+
+        try {
+          await db.collection('users').doc(user.uid).update({
+            dob,
+            age: new Date().getFullYear() - new Date(dob).getFullYear(),
+            phone,
+            onboarded: true
+          });
+
+          showMessage('Profile saved! Welcome to AMORA.');
+          setTimeout(() => window.location.href = 'home.html', 1500);
+        } catch (err) {
+          showMessage('Failed to save. Try again.', 'error');
+        }
+      });
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = 'index.html';
+      } else {
+        initComplete(false);
+        initComplete(true);
+      }
+    });
+  </script>
+</body>
+</html>

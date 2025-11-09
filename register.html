@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AMORA – Create Account</title>
+  <meta name="description" content="Find meaningful connections on AMORA. Safe, verified, real people.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-analytics-compat.js"></script>
+
+  <style>
+    /* === GLOBAL RESET & TYPOGRAPHY === */
+    :root {
+      --bg: #fdf8f9;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --text-light: #6b7280;
+      --accent: #e91e63;
+      --accent-hover: #d81b5c;
+      --accent-light: #fdf2f8;
+      --border: #e5e7eb;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow: 0 10px 30px rgba(233, 30, 99, 0.12);
+      --shadow-lg: 0 20px 50px rgba(233, 30, 99, 0.18);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --success: #10b981;
+      --error: #ef4444;
+      --success-bg: #ecfdf5;
+      --error-bg: #fef2f2;
+      --transition: all 0.25s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+    }
+
+    /* === DESKTOP LAYOUT — ELEGANT & SPACIOUS === */
+    .desktop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: linear-gradient(135deg, #fdf2f8 0%, #f8f9fd 100%);
+    }
+    .desktop .container {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 3rem 3.5rem;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    .desktop .container::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #e91e63, #f06292);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .desktop .logo {
+      width: 84px; height: 84px;
+      margin: 0 auto 1.5rem;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 2rem;
+      box-shadow: 0 8px 25px rgba(233, 30, 99, 0.3);
+      transition: var(--transition);
+    }
+    .desktop .logo:hover { transform: scale(1.05); }
+
+    .desktop h1 {
+      font-size: 2.125rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.04em;
+      color: #1a1a1a;
+    }
+    .desktop .subtitle {
+      font-size: 1rem;
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: 2.5rem;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .desktop .input-group {
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+    .desktop label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #374151;
+    }
+    .desktop input {
+      width: 100%;
+      padding: 1rem 1.125rem;
+      border: 1.8px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      background: var(--card);
+      transition: var(--transition);
+    }
+    .desktop input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(233, 30, 99, 0.15);
+    }
+    .desktop .row {
+      display: flex;
+      gap: 1rem;
+    }
+    .desktop .row .input-group { flex: 1; }
+
+    .desktop .btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1.0625rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 1rem;
+      box-shadow: 0 4px 15px rgba(233, 30, 99, 0.25);
+    }
+    .desktop .btn:hover { 
+      background: var(--accent-hover); 
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(233, 30, 99, 0.35);
+    }
+    .desktop .btn-google {
+      background: transparent;
+      border: 1.8px solid var(--border);
+      color: #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      font-weight: 500;
+      box-shadow: none;
+    }
+    .desktop .btn-google:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      transform: translateY(-1px);
+    }
+    .desktop .btn-google img { width: 20px; height: 20px; }
+
+    .desktop .divider {
+      margin: 2rem 0;
+      position: relative;
+      font-size: 0.9375rem;
+      color: var(--text-light);
+      text-align: center;
+    }
+    .desktop .divider::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 0; right: 0;
+      height: 1px;
+      background: var(--border);
+    }
+    .desktop .divider span {
+      background: var(--card);
+      padding: 0 1.25rem;
+    }
+
+    .desktop .links {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.9375rem;
+    }
+    .desktop .links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .desktop .links a:hover { text-decoration: underline; }
+
+    .desktop .info {
+      font-size: 0.8125rem;
+      color: var(--text-light);
+      margin-top: 2rem;
+      text-align: center;
+      line-height: 1.7;
+      padding: 0 1rem;
+      background: var(--accent-light);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      border: 1px solid #fce7f3;
+    }
+
+    .desktop .message {
+      margin: 1.25rem 0;
+      padding: 1rem 1.125rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+    .desktop .success { background: var(--success-bg); color: var(--success); border-color: #a7f3d0; }
+    .desktop .error   { background: var(--error-bg);   color: var(--error);   border-color: #fecaca; }
+
+    /* === MOBILE LAYOUT — FULL-SCREEN, NATIVE APP FEEL === */
+    .mobile {
+      display: none;
+      min-height: 100vh;
+      background: var(--card);
+      flex-direction: column;
+    }
+    .mobile-header {
+      padding: 2rem 1.5rem 1.5rem;
+      text-align: center;
+      background: linear-gradient(135deg, #fdf2f8 0%, #f8f9fd 100%);
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+    }
+    .mobile-header .logo {
+      width: 68px; height: 68px;
+      margin: 0 auto 1rem;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 1.75rem;
+      box-shadow: 0 6px 20px rgba(233, 30, 99, 0.3);
+    }
+    .mobile-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .mobile-header p {
+      font-size: 0.9375rem;
+      color: var(--text-light);
+    }
+
+    .mobile-form {
+      padding: 1.5rem;
+      flex-grow: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .mobile .input-group {
+      margin-bottom: 1.5rem;
+    }
+    .mobile label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #374151;
+    }
+    .mobile input {
+      width: 100%;
+      padding: 1rem 1.125rem;
+      border: 1.8px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 1.0625rem;
+      background: var(--card);
+    }
+    .mobile input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(233, 30, 99, 0.15);
+    }
+    .mobile .row {
+      display: flex;
+      gap: 1rem;
+    }
+    .mobile .row .input-group { flex: 1; }
+
+    .mobile .btn {
+      width: 100%;
+      padding: 1.125rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1.125rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1.25rem;
+      box-shadow: 0 6px 20px rgba(233, 30, 99, 0.3);
+    }
+    .mobile .btn:hover { 
+      background: var(--accent-hover); 
+      transform: translateY(-2px);
+    }
+    .mobile .btn-google {
+      background: #fff;
+      border: 1.8px solid var(--border);
+      color: #444;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .mobile .btn-google:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .mobile .divider { margin: 2rem 0; }
+    .mobile .divider::before { background: var(--border); }
+    .mobile .divider span { background: var(--card); padding: 0 1rem; }
+
+    .mobile .links {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.9375rem;
+    }
+    .mobile .links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .mobile .info {
+      margin-top: 2.5rem;
+      font-size: 0.8125rem;
+      color: var(--text-light);
+      text-align: center;
+      line-height: 1.7;
+      background: var(--accent-light);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+      border: 1px solid #fce7f3;
+    }
+
+    .mobile .message {
+      margin: 1.25rem 0;
+      padding: 1rem 1.125rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9375rem;
+      font-weight: 500;
+    }
+
+    /* === RESPONSIVE SWITCH === */
+    @media (max-width: 768px) {
+      .desktop { display: none; }
+      .mobile { display: flex; }
+    }
+    @media (min-width: 769px) {
+      .mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- === DESKTOP VERSION — PREMIUM DATING APP FEEL === -->
+  <div class="desktop">
+    <div class="container">
+      <div class="logo">A</div>
+      <h1>Create Your AMORA Account</h1>
+      <p class="subtitle">Share a bit about yourself—we use this to help you find real, meaningful connections.</p>
+
+      <div class="input-group">
+        <label for="email-d">Email Address</label>
+        <input type="email" id="email-d" placeholder="you@example.com" autocomplete="email" required />
+      </div>
+
+      <div class="row">
+        <div class="input-group">
+          <label for="firstName-d">First Name</label>
+          <input type="text" id="firstName-d" placeholder="John" autocomplete="given-name" required />
+        </div>
+        <div class="input-group">
+          <label for="lastName-d">Last Name</label>
+          <input type="text" id="lastName-d" placeholder="Doe" autocomplete="family-name" required />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="otherNames-d">Other Names (Optional)</label>
+        <input type="text" id="otherNames-d" placeholder="Middle name or nickname" autocomplete="additional-name" />
+      </div>
+
+      <div class="input-group">
+        <label for="dob-d">Date of Birth</label>
+        <input type="date" id="dob-d" required />
+      </div>
+
+      <div class="input-group">
+        <label for="phone-d">Phone Number</label>
+        <input type="tel" id="phone-d" placeholder="+1234567890" autocomplete="tel" required />
+      </div>
+
+      <div class="input-group">
+        <label for="password-d">Password</label>
+        <input type="password" id="password-d" placeholder="8+ characters, number, uppercase" autocomplete="new-password" required />
+      </div>
+
+      <div class="input-group">
+        <label for="confirmPassword-d">Confirm Password</label>
+        <input type="password" id="confirmPassword-d" placeholder="Re-enter your password" autocomplete="new-password" required />
+      </div>
+
+      <div id="message-d"></div>
+
+      <button id="registerBtn-d" class="btn">Create Account</button>
+
+      <div class="divider"><span>or</span></div>
+
+      <button id="googleSignUp-d" class="btn btn-google">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        Continue with Google
+      </button>
+
+      <div class="links">
+        <a href="index.html">Already have an account? Sign in</a>
+      </div>
+
+      <p class="info">
+        We verify age and identity to keep AMORA safe and authentic. Your data helps us match you with people who share your values.
+      </p>
+    </div>
+  </div>
+
+  <!-- === MOBILE VERSION — NATIVE, FULL-SCREEN === -->
+  <div class="mobile">
+    <div class="mobile-header">
+      <div class="logo">A</div>
+      <h1>Create Account</h1>
+      <p>Let’s get to know you—real people, real connections.</p>
+    </div>
+
+    <div class="mobile-form">
+      <div class="input-group">
+        <label for="email-m">Email</label>
+        <input type="email" id="email-m" placeholder="you@example.com" autocomplete="email" required />
+      </div>
+
+      <div class="row">
+        <div class="input-group">
+          <label for="firstName-m">First</label>
+          <input type="text" id="firstName-m" placeholder="John" autocomplete="given-name" required />
+        </div>
+        <div class="input-group">
+          <label for="lastName-m">Last</label>
+          <input type="text" id="lastName-m" placeholder="Doe" autocomplete="family-name" required />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="otherNames-m">Other Names (Optional)</label>
+        <input type="text" id="otherNames-m" placeholder="Middle or nickname" autocomplete="additional-name" />
+      </div>
+
+      <div class="input-group">
+        <label for="dob-m">Birthday</label>
+        <input type="date" id="dob-m" required />
+      </div>
+
+      <div class="input-group">
+        <label for="phone-m">Phone</label>
+        <input type="tel" id="phone-m" placeholder="+1234567890" autocomplete="tel" required />
+      </div>
+
+      <div class="input-group">
+        <label for="password-m">Password</label>
+        <input type="password" id="password-m" placeholder="Strong password" autocomplete="new-password" required />
+      </div>
+
+      <div class="input-group">
+        <label for="confirmPassword-m">Confirm</label>
+        <input type="password" id="confirmPassword-m" placeholder="Re-enter" autocomplete="new-password" required />
+      </div>
+
+      <div id="message-m"></div>
+
+      <button id="registerBtn-m" class="btn">Create Account</button>
+
+      <div class="divider"><span>or</span></div>
+
+      <button id="googleSignUp-m" class="btn btn-google">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        Continue with Google
+      </button>
+
+      <div class="links">
+        <a href="index.html">Already have an account? Sign in</a>
+      </div>
+
+      <div class="info">
+        We verify age and identity to keep AMORA safe. Your info helps us match you with real people.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === Firebase Config ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
+      authDomain: "amora-bytales.firebaseapp.com",
+      projectId: "amora-bytales",
+      storageBucket: "amora-bytales.firebasestorage.app",
+      messagingSenderId: "378090826699",
+      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
+      measurementId: "G-PB6EX99N2Y"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // === Shared Logic ===
+    function initForm(isMobile) {
+      const suffix = isMobile ? '-m' : '-d';
+      const emailIn = document.getElementById('email' + suffix);
+      const firstNameIn = document.getElementById('firstName' + suffix);
+      const lastNameIn = document.getElementById('lastName' + suffix);
+      const otherNamesIn = document.getElementById('otherNames' + suffix);
+      const dobIn = document.getElementById('dob' + suffix);
+      const phoneIn = document.getElementById('phone' + suffix);
+      const passwordIn = document.getElementById('password' + suffix);
+      const confirmIn = document.getElementById('confirmPassword' + suffix);
+      const registerBtn = document.getElementById('registerBtn' + suffix);
+      const googleBtn = document.getElementById('googleSignUp' + suffix);
+      const messageBox = document.getElementById('message' + suffix);
+
+      function showMessage(text, type = 'error') {
+        messageBox.textContent = text;
+        messageBox.className = `message ${type}`;
+        messageBox.style.display = 'block';
+        setTimeout(() => messageBox.style.display = 'none', 7000);
+      }
+
+      function isAdult(dob) {
+        const birth = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+        return age >= 18;
+      }
+
+      function isStrongPassword(pw) {
+        return pw.length >= 8 && /[A-Z]/.test(pw) && /[0-9]/.test(pw);
+      }
+
+      async function saveUserProfile(user, data) {
+        const userRef = db.collection('users').doc(user.uid);
+        const profile = {
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          otherNames: data.otherNames || '',
+          fullName: `${data.firstName} ${data.lastName}`.trim(),
+          dob: data.dob,
+          age: new Date().getFullYear() - new Date(data.dob).getFullYear(),
+          phone: data.phone,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          verified: false,
+          onboarded: false,
+          authProvider: data.provider || 'email'
+        };
+        await userRef.set(profile, { merge: true });
+      }
+
+      registerBtn.addEventListener('click', async () => {
+        const email = emailIn.value.trim();
+        const password = passwordIn.value;
+        const confirm = confirmIn.value;
+        const firstName = firstNameIn.value.trim();
+        const lastName = lastNameIn.value.trim();
+        const otherNames = otherNamesIn.value.trim();
+        const dob = dobIn.value;
+        const phone = phoneIn.value.trim();
+
+        if (!email || !password || !firstName || !lastName || !dob || !phone) {
+          showMessage('Please complete all required fields.');
+          return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showMessage('Enter a valid email address.');
+          return;
+        }
+
+        if (password !== confirm) {
+          showMessage('Passwords do not match.');
+          return;
+        }
+
+        if (!isStrongPassword(password)) {
+          showMessage('Password: 8+ chars, 1 uppercase, 1 number.');
+          return;
+        }
+
+        if (!isAdult(dob)) {
+          showMessage('You must be 18 or older to join AMORA.');
+          return;
+        }
+
+        if (!/^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s/g, ''))) {
+          showMessage('Valid phone number required (e.g., +1234567890).');
+          return;
+        }
+
+        try {
+          const methods = await auth.fetchSignInMethodsForEmail(email);
+          if (methods.length > 0) {
+            showMessage('This email is already registered. Sign in instead.');
+            return;
+          }
+
+          const cred = await auth.createUserWithEmailAndPassword(email, password);
+          const user = cred.user;
+
+          await user.updateProfile({ displayName: `${firstName} ${lastName}` });
+          await saveUserProfile(user, { email, firstName, lastName, otherNames, dob, phone });
+
+          await user.sendEmailVerification();
+          showMessage('Account created! Check your email to verify.', 'success');
+          setTimeout(() => window.location.href = 'verify.html', 2000);
+        } catch (err) {
+          showMessage('AMORA: Registration failed. Please try again.');
+        }
+      });
+
+      googleBtn.addEventListener('click', () => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('email'); provider.addScope('profile');
+        auth.signInWithPopup(provider)
+          .then(async (result) => {
+            const user = result.user;
+            if (result.additionalUserInfo.isNewUser) {
+              const profile = result.additionalUserInfo.profile;
+              await saveUserProfile(user, {
+                email: user.email,
+                firstName: profile.given_name || '',
+                lastName: profile.family_name || '',
+                otherNames: '',
+                dob: '',
+                phone: '',
+                provider: 'google'
+              });
+              window.location.href = 'complete-profile.html';
+            } else {
+              window.location.href = 'home.html';
+            }
+          })
+          .catch(() => showMessage('Google sign-up failed.'));
+      });
+    }
+
+    initForm(false); // desktop
+    initForm(true);  // mobile
+  </script>
+</body>
+</html>
