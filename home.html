@@ -4,304 +4,152 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AMORA – Home</title>
-
-  <!-- CSP -->
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' https://www.gstatic.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src https://fonts.gstatic.com;
-    img-src 'self' data: https:;
-    connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com;
-  ">
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <style>
-    :root {
-      --bg: #fafafa;
-      --card: #ffffff;
-      --text: #1a1a1a;
-      --accent: #e91e63;
-      --accent-hover: #c81c56;
-      --border: #e5e7eb;
-      --shadow: 0 8px 25px rgba(0,0,0,0.1);
-      --radius: 16px;
-      --success: #10b981;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 1rem;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-    .logo {
-      width: 60px; height: 60px; background: var(--accent); border-radius: 50%; margin: 0 auto 0.5rem;
-      display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.5rem;
-    }
-    h1 { font-size: 1.5rem; font-weight: 600; }
-
-    .card-stack {
-      flex: 1;
-      position: relative;
-      max-width: 380px;
-      margin: 0 auto;
-      height: 520px;
-    }
-    .card {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      transition: transform 0.4s ease, opacity 0.4s ease;
-      user-select: none;
-      display: flex;
-      flex-direction: column;
-    }
-    .card img {
-      width: 100%;
-      height: 65%;
-      object-fit: cover;
-      background: #eee;
-    }
-    .card-info {
-      padding: 1.25rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .name {
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-    .age { font-size: 1.1rem; color: #6b7280; }
-    .bio { font-size: 0.9375rem; color: #4b5563; margin-top: 0.5rem; line-height: 1.5; }
-
-    .actions {
-      display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-      margin-top: 1.5rem;
-    }
-    .btn {
-      width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .btn-reject { background: #ef4444; }
-    .btn-like { background: var(--success); }
-
-    .empty {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: #6b7280;
-      font-size: 1.1rem;
-    }
-
-    .logout {
-      margin-top: 1.5rem;
-      text-align: center;
-      font-size: 0.875rem;
-    }
-    .logout a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 500;
-    }
+    :root{--bg:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);--card:#fff;--text:#1a1a1a;--light:#6b7280;--accent:#e91e63;--radius:20px;--shadow:0 4px 20px rgba(233,30,99,.1)}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{background:var(--card);padding:1rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.05);position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:1rem}
+    .logo{width:40px;height:40px;border-radius:50%;object-fit:cover}
+    .search{flex:1;max-width:200px;padding:.75rem 1rem;border:1px solid #f3e8ff;border-radius:var(--radius);background:#fafafa;font-size:.9rem}
+    .profile-icon{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;text-decoration:none}
+    main{margin-top:70px;padding-bottom:80px}
+    .section{margin:1.5rem}
+    h2{font-size:1.2rem;font-weight:600;margin-bottom:1rem}
+    .stories{display:flex;overflow-x:auto;gap:1rem;padding:1rem 0;scrollbar-width:none}
+    .stories::-webkit-scrollbar{display:none}
+    .story{flex:0 0 80px;text-align:center;cursor:pointer}
+    .story img{width:70px;height:70px;border-radius:50%;border:3px solid var(--accent);margin-bottom:.5rem}
+    .story div{font-size:.8rem}
+    .recs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem}
+    .card{background:var(--card);border-radius:var(--radius);padding:1rem;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:.3s}
+    .card:hover{transform:translateY(-5px);box-shadow:0 8px 30px rgba(233,30,99,.15)}
+    .card img{width:80px;height:80px;border-radius:50%;margin-bottom:.75rem;border:2px solid #f3e8ff}
+    .card .name{font-weight:600}
+    .card .age{color:var(--light);font-size:.9rem}
+    .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:.75rem 0;box-shadow:0 -2px 10px rgba(0,0,0,.05)}
+    .nav a{display:flex;flex-direction:column;align-items:center;color:var(--light);text-decoration:none;font-size:.7rem}
+    .nav a.active{color:var(--accent)}
+    .nav svg{width:24px;height:24px;margin-bottom:.25rem}
+    .debug{color:#e91e63;font-size:.9rem;margin:1rem;text-align:center;padding:1rem;background:#fff;border-radius:12px;box-shadow:var(--shadow)}
   </style>
 </head>
 <body>
+  <header class="header">
+    <img src="logo.jpg" alt="AMORA" class="logo">
+    <input type="search" class="search" placeholder="Search..." id="search">
+    <a href="profile.html" class="profile-icon" id="initial">U</a>
+  </header>
 
-  <div class="header">
-    <div class="logo">A</div>
-    <h1>Find Your Match</h1>
-  </div>
+  <main>
+    <div class="debug" id="debug">Connecting...</div>
+    <section class="section">
+      <h2>Stories</h2>
+      <div class="stories" id="stories"></div>
+    </section>
+    <section class="section">
+      <h2>You may like</h2>
+      <div class="recs" id="recs"></div>
+    </section>
+  </main>
 
-  <div class="card-stack" id="cardStack">
-    <div class="empty">Loading profiles...</div>
-  </div>
-
-  <div class="actions">
-    <button class="btn btn-reject" id="rejectBtn">Close</button>
-    <button class="btn btn-like" id="likeBtn">Heart</button>
-  </div>
-
-  <div class="logout">
-    <a href="#" id="logoutLink">Sign Out</a>
-  </div>
+  <nav class="nav">
+    <a href="home.html" class="active">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svm>
+      <span>Home</span>
+    </a>
+    <a href="messages.html">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M18 12.5v-6a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2z"/></svg>
+      <span>Messages</span>
+    </a>
+    <a href="notifications.html">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+      <span>Alerts</span>
+    </a>
+  </nav>
 
   <script>
-    const firebaseConfig = {
+    const config = {
       apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
       authDomain: "amora-bytales.firebaseapp.com",
+      databaseURL: "https://amora-bytales-default-rtdb.firebaseio.com",
       projectId: "amora-bytales",
       storageBucket: "amora-bytales.firebasestorage.app",
       messagingSenderId: "378090826699",
-      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e",
-      measurementId: "G-PB6EX99N2Y"
+      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e"
     };
-    firebase.initializeApp(firebaseConfig);
+
+    firebase.initializeApp(config);
     const auth = firebase.auth();
-    const db = firebase.firestore();
+    const db = firebase.database();
 
-    const cardStack = document.getElementById('cardStack');
-    const rejectBtn = document.getElementById('rejectBtn');
-    const likeBtn = document.getElementById('likeBtn');
-    const logoutLink = document.getElementById('logoutLink');
+    const $ = id => document.getElementById(id);
+    const debug = $('debug');
+    const stories = $('stories');
+    const recs = $('recs');
+    const initial = $('initial');
 
-    let currentUser = null;
-    let profiles = [];
-    let currentIndex = 0;
-
-    // === AUTH CHECK ===
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async user => {
       if (!user) {
-        window.location.href = 'index.html';
+        debug.textContent = "Not logged in.";
+        setTimeout(() => location.href = 'index.html', 1000);
         return;
       }
-      currentUser = user;
-      loadProfiles();
-    });
 
-    // === LOAD PROFILES (EXCEPT SELF) ===
-    async function loadProfiles() {
+      initial.textContent = (user.email || 'U')[0].toUpperCase();
+      debug.textContent = `Logged in as ${user.email}. Reading profiles...`;
+
       try {
-        const snapshot = await db.collection('users').get();
-        profiles = snapshot.docs
-          .filter(doc => doc.id !== currentUser.uid)
-          .map(doc => ({ id: doc.id, ...doc.data().personal }))
-          .filter(p => p.firstName && p.lastName && p.dob);
+        const snap = await db.ref('users').once('value');
+        const data = snap.val();
 
-        if (profiles.length === 0) {
-          cardStack.innerHTML = '<div class="empty">No profiles available yet.</div>';
+        if (!data) {
+          debug.textContent = "No users found.";
           return;
         }
 
-        renderCard();
+        const users = Object.values(data);
+        const others = users.filter(u => u.uid !== user.uid);
+
+        debug.textContent = `Loaded ${others.length} profiles.`;
+
+        // STORIES
+        stories.innerHTML = others.map(u => {
+          const name = u.firstName || u.otherName || 'User';
+          const pic = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=70`;
+          return `<div class="story" onclick="location.href='profile.html?uid=${u.uid}'">
+            <img src="${pic}" alt="${name}">
+            <div>${name}</div>
+            <div>?</div>
+          </div>`;
+        }).join('');
+
+        // RECOMMENDED
+        const myGender = (await db.ref('users/' + user.uid + '/gender').once('value')).val();
+        const opposite = myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : null;
+        let recsList = others;
+        if (opposite) recsList = others.filter(u => u.gender === opposite) || others;
+        recsList = recsList.sort(() => Math.random() - 0.5).slice(0, 6);
+
+        recs.innerHTML = recsList.map(u => {
+          const name = u.firstName || u.otherName || 'User';
+          const pic = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=80`;
+          return `<div class="card" onclick="location.href='profile.html?uid=${u.uid}'">
+            <img src="${pic}" alt="${name}">
+            <div class="name">${name} ${u.surname?.[0] || ''}.</div>
+            <div class="age">?</div>
+          </div>`;
+        }).join('');
+
       } catch (err) {
-        cardStack.innerHTML = '<div class="empty">Error loading profiles.</div>';
+        debug.textContent = `ERROR: ${err.message}`;
+        debug.style.color = 'red';
+        console.error(err);
       }
-    }
-
-    // === RENDER CARD ===
-    function renderCard() {
-      if (currentIndex >= profiles.length) {
-        cardStack.innerHTML = '<div class="empty">No more profiles!</div>';
-        return;
-      }
-
-      const profile = profiles[currentIndex];
-      const age = new Date().getFullYear() - new Date(profile.dob).getFullYear();
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <img src="https://via.placeholder.com/380x300?text=${encodeURIComponent(profile.firstName)}" alt="Profile">
-        <div class="card-info">
-          <div>
-            <div class="name">${profile.firstName} ${profile.lastName}</div>
-            <div class="age">${age} years old</div>
-            <div class="bio">${profile.phone || 'No bio yet.'}</div>
-          </div>
-        </div>
-      `;
-
-      cardStack.innerHTML = '';
-      cardStack.appendChild(card);
-
-      // === SWIPE LOGIC ===
-      let startX = 0;
-      let currentX = 0;
-      let isDragging = false;
-
-      const onStart = (e) => {
-        isDragging = true;
-        startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
-        card.style.transition = 'none';
-      };
-
-      const onMove = (e) => {
-        if (!isDragging) return;
-        currentX = (e.type.includes('mouse') ? e.pageX : e.touches[0].pageX) - startX;
-        card.style.transform = `translateX(${currentX}px) rotate(${currentX / 20}deg)`;
-      };
-
-      const onEnd = () => {
-        if (!isDragging) return;
-        isDragging = false;
-        card.style.transition = 'transform 0.4s ease';
-
-        const threshold = 100;
-        if (Math.abs(currentX) > threshold) {
-          const direction = currentX > 0 ? 1 : -1;
-          card.style.transform = `translateX(${direction * 500}px) rotate(${direction * 30}deg)`;
-          setTimeout(() => {
-            if (direction === 1) handleLike();
-            else handleReject();
-          }, 300);
-        } else {
-          card.style.transform = 'translateX(0) rotate(0deg)';
-        }
-      };
-
-      card.addEventListener('mousedown', onStart);
-      card.addEventListener('mousemove', onMove);
-      card.addEventListener('mouseup', onEnd);
-      card.addEventListener('touchstart', onStart);
-      card.addEventListener('touchmove', onMove);
-      card.addEventListener('touchend', onEnd);
-    }
-
-    // === BUTTON ACTIONS ===
-    rejectBtn.onclick = () => {
-      const card = cardStack.querySelector('.card');
-      if (card) {
-        card.style.transition = 'transform 0.4s ease';
-        card.style.transform = 'translateX(-500px) rotate(-30deg)';
-        setTimeout(() => { currentIndex++; renderCard(); }, 400);
-      }
-    };
-
-    likeBtn.onclick = () => {
-      const card = cardStack.querySelector('.card');
-      if (card) {
-        card.style.transition = 'transform 0.4s ease';
-        card.style.transform = 'translateX(500px) rotate(30deg)';
-        setTimeout(() => { handleLike(); }, 400);
-      }
-    };
-
-    async function handleLike() {
-      const likedUserId = profiles[currentIndex].id;
-      await db.collection('users').doc(currentUser.uid).collection('likes').doc(likedUserId).set({ timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-      currentIndex++;
-      renderCard();
-    }
-
-    function handleReject() {
-      currentIndex++;
-      renderCard();
-    }
-
-    // === LOGOUT ===
-    logoutLink.onclick = (e) => {
-      e.preventDefault();
-      auth.signOut().then(() => window.location.href = 'index.html');
-    };
+    });
   </script>
 </body>
 </html>
