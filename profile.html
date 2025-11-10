@@ -9,106 +9,152 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <style>
-    :root{--bg:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);--card:#fff;--text:#1a1a1a;--light:#6b7280;--accent:#e91e63;--radius:20px;--shadow:0 4px 20px rgba(233,30,99,.1);--border:#f3e8ff}
+    :root{--bg:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);--card:#fff;--text:#1a1a1a;--light:#6b7280;--accent:#e91e63;--green:#10b981;--blue:#3b82f6;--radius:20px;--shadow:0 4px 20px rgba(233,30,99,.1);--border:#f3e8ff}
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
-    .header{background:var(--card);padding:1rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.05);position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:1rem}
-    .back{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;text-decoration:none}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{background:var(--card);padding:1rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.05);position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
     .logo{width:40px;height:40px;border-radius:50%;object-fit:cover}
-    .title{font-size:1.1rem;font-weight:600;flex:1;text-align:center;margin-right:40px}
-    .container{max-width:420px;margin:80px auto 0;padding:1.5rem;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px}
-    .profile-pic{position:relative;width:120px;height:120px;margin:0 auto 1rem}
-    .profile-pic img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:4px solid var(--border)}
-    .edit-photo{position:absolute;bottom:8px;right:8px;background:var(--accent);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem}
-    .name{font-size:1.4rem;font-weight:700;text-align:center;margin-bottom:.5rem}
-    .age{font-size:1rem;color:var(--light);text-align:center;margin-bottom:1.5rem}
+    .title{position:absolute;left:50%;transform:translateX(-50%);font-size:1.1rem;font-weight:600}
+    .user-profile{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem}
+    .user-profile img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
+    main{margin-top:70px;padding:1.5rem;padding-bottom:80px}
+    .profile-header{text-align:center;margin-bottom:2rem}
+    .profile-pic{position:relative;width:120px;height:120px;margin:0 auto 1rem;border-radius:50%;overflow:hidden;box-shadow:var(--shadow);transition:.3s}
+    .profile-pic:hover{transform:scale(1.05)}
+    .profile-pic img{width:100%;height:100%;object-fit:cover}
+    .edit-photo{position:absolute;bottom:8px;right:8px;background:var(--accent);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:.2s}
+    .edit-photo:hover{background:#c81c56;transform:scale(1.1)}
+    .name{font-size:1.4rem;font-weight:700;margin-bottom:.5rem}
+    .age{font-size:1rem;color:var(--light);margin-bottom:1.5rem}
     .section{margin-bottom:1.5rem}
-    .label{font-size:.85rem;color:var(--light);margin-bottom:.4rem;display:block}
-    .input, .select, textarea{padding:.75rem 1rem;border:1px solid var(--border);border-radius:var(--radius);width:100%;font-size:1rem;background:#fafafa}
-    .input:focus, .select:focus, textarea:focus{outline:none;border-color:var(--accent)}
-    textarea{resize:vertical;min-height:80px}
+    .label{font-size:.8rem;color:var(--light);margin-bottom:.5rem;display:block;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+    .label.required::after{content:' *';color:var(--accent)}
+    .input, .select, textarea{padding:.5rem 1rem;border:1px solid var(--border);border-radius:12px;width:100%;font-size:.95rem;background:#fafafa;transition:.2s}
+    .input:focus, .select:focus, textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(233,30,99,.1)}
+    .input:invalid,.select:invalid,textarea:invalid{border-color:#ef4444}
+    .input::placeholder, .select option::placeholder, textarea::placeholder{font-style:italic;color:var(--light);opacity:1}
+    textarea{resize:vertical;min-height:60px}
     .row{display:flex;gap:1rem}
     .row > *{flex:1}
-    .btn{background:var(--accent);color:#fff;padding:.9rem;border:none;border-radius:var(--radius);font-weight:600;width:100%;cursor:pointer;margin-top:1rem;transition:.2s}
-    .btn:hover{background:#c81c56}
-    .btn:disabled{background:#ccc;cursor:not-allowed}
-    .premium-btn{background:#f59e0b;color:#fff;padding:.9rem;border:none;border-radius:var(--radius);font-weight:600;width:100%;cursor:not-allowed;opacity:0.6;margin-top:.5rem}
+    .interests-section{background:linear-gradient(135deg,rgba(16,185,129,.05) 0%,rgba(59,130,246,.05) 100%);padding:1rem;border-radius:var(--radius);border:1px solid var(--border)}
+    .interests-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem;margin-bottom:1rem}
+    .interest-checkbox{display:flex;align-items:center;gap:.5rem;font-size:.9rem;cursor:pointer}
+    .interest-checkbox input{width:auto;margin:0}
+    .custom-interests{font-size:.8rem;color:var(--light);margin-top:.25rem}
+    .btn{background:var(--accent);color:#fff;padding:.75rem;border:none;border-radius:var(--radius);font-weight:600;width:100%;cursor:pointer;margin-top:1rem;transition:.2s;position:relative;overflow:hidden}
+    .btn:hover{background:#c81c56;transform:translateY(-1px)}
+    .btn:disabled{background:#ccc;cursor:not-allowed;transform:none}
+    .btn.saving::after{content:'';position:absolute;top:50%;left:50%;width:20px;height:20px;border:2px solid transparent;border-top:2px solid #fff;border-radius:50%;animation:spin 1s linear infinite;transform:translate(-50%,-50%)}
+    @keyframes spin{0%{transform:translate(-50%,-50%) rotate(0deg)}100%{transform:translate(-50%,-50%) rotate(360deg)}}
+    .premium-btn{background:var(--green);color:#fff;padding:.75rem;border:none;border-radius:var(--radius);font-weight:600;width:100%;cursor:pointer;opacity:1;margin-top:.5rem;transition:.2s}
+    .premium-btn:hover{background:#059669;transform:translateY(-1px)}
+    .toast{position:fixed;top:20px;right:20px;padding:1rem 1.5rem;background:var(--accent);color:#fff;border-radius:var(--radius);box-shadow:var(--shadow);transform:translateX(100%);transition:.3s;z-index:200;min-width:250px}
+    .toast.show{transform:translateX(0)}
+    .toast.error{background:#ef4444}
     .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:.75rem 0;box-shadow:0 -2px 10px rgba(0,0,0,.05);z-index:100}
-    .nav a{display:flex;flex-direction:column;align-items:center;color:var(--light);text-decoration:none;font-size:.7rem}
+    .nav a{display:flex;flex-direction:column;align-items:center;color:var(--light);text-decoration:none;font-size:.7rem;transition:.2s}
     .nav a.active{color:var(--accent)}
+    .nav a:hover{transform:translateY(-2px)}
     .nav svg{width:24px;height:24px;margin-bottom:.25rem}
     .hidden{display:none}
-    .debug{color:#e91e63;font-size:.8rem;margin:1rem;text-align:center;padding:1rem;background:#fff;border-radius:12px;box-shadow:var(--shadow)}
+    .progress-bar{margin:1rem 0;background:var(--border);height:4px;border-radius:2px;overflow:hidden}
+    .progress-fill{background:var(--blue);height:100%;transition:.3s;border-radius:2px}
+    @media (max-width: 768px) {
+      .header{padding:1rem;gap:.5rem}
+      main{padding:1rem}
+      .row{flex-direction:column;gap:.5rem}
+      .profile-pic{width:100px;height:100px}
+      .name{font-size:1.2rem}
+    }
   </style>
 </head>
 <body>
-
   <header class="header">
-    <a href="home.html" class="back">Back</a>
     <img src="logo.jpg" alt="AMORA" class="logo">
     <div class="title">My Profile</div>
+    <a href="profile.html" class="user-profile" id="userProfile">
+      <img id="userPhoto" src="" alt="You">
+    </a>
   </header>
-
-  <div class="container">
-    <div class="debug" id="debug">Loading...</div>
-
-    <div class="profile-pic">
-      <img id="photo" src="" alt="Profile">
-      <label class="edit-photo" for="photoInput">Camera</label>
-      <input type="file" id="photoInput" accept="image/*" class="hidden">
-    </div>
-
-    <div class="name" id="nameDisplay">Loading...</div>
-    <div class="age" id="ageDisplay">? years old</div>
-
-    <div class="section">
-      <div class="label">Full Name</div>
-      <div class="row">
-        <input type="text" class="input" id="firstName" placeholder="First">
-        <input type="text" class="input" id="middleName" placeholder="Middle">
+  <main>
+    <div class="profile-header">
+      <div class="profile-pic" id="profilePicContainer">
+        <img id="photo" src="" alt="Profile">
+        <label class="edit-photo" for="photoInput">📷</label>
+        <input type="file" id="photoInput" accept="image/*" class="hidden">
       </div>
-      <input type="text" class="input" id="surname" placeholder="Surname" style="margin-top:.5rem">
+      <div class="name" id="nameDisplay">Loading...</div>
+      <div class="age" id="ageDisplay">? years old</div>
     </div>
-
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
     <div class="section">
-      <div class="label">Gender</div>
-      <select class="select" id="gender">
-        <option value="">Select</option>
+      <div class="label required">Full Name</div>
+      <div class="row">
+        <input type="text" class="input" id="firstName" placeholder="First Name" required>
+        <input type="text" class="input" id="middleName" placeholder="Middle Name (Optional)">
+      </div>
+      <input type="text" class="input" id="surname" placeholder="Surname" style="margin-top:.5rem" required>
+    </div>
+    <div class="section">
+      <div class="label required">Gender</div>
+      <select class="select" id="gender" required>
+        <option value="">Select Gender</option>
         <option value="male">Male</option>
         <option value="female">Female</option>
         <option value="other">Other</option>
       </select>
     </div>
-
     <div class="section">
-      <div class="label">Birth Year (for age)</div>
+      <div class="label">Birth Year</div>
       <input type="number" class="input" id="birthYear" placeholder="e.g. 1998" min="1900" max="2010">
     </div>
-
     <div class="section">
       <div class="label">Phone</div>
-      <input type="tel" class="input" id="phone" placeholder="+254...">
+      <input type="tel" class="input" id="phone" placeholder="e.g. +254 700 123 456">
     </div>
-
     <div class="section">
       <div class="label">Nationality</div>
       <input type="text" class="input" id="nationality" placeholder="e.g. Kenyan">
     </div>
-
+    <div class="section">
+      <div class="label">Country of Residence</div>
+      <input type="text" class="input" id="country" placeholder="e.g. Kenya">
+    </div>
+    <div class="section">
+      <div class="label">City/Residence</div>
+      <input type="text" class="input" id="residence" placeholder="e.g. Nairobi">
+    </div>
     <div class="section">
       <div class="label">Profession</div>
-      <input type="text" class="input" id="profession" placeholder="e.g. Software Developer">
+      <select class="select" id="profession">
+        <option value="">Select or Type Your Profession</option>
+        <option value="Software Developer">Software Developer</option>
+        <option value="Doctor">Doctor</option>
+        <option value="Teacher">Teacher</option>
+        <option value="Engineer">Engineer</option>
+        <option value="Artist">Artist</option>
+        <option value="Entrepreneur">Entrepreneur</option>
+        <option value="Other">Other (Type Below)</option>
+      </select>
+      <input type="text" class="input" id="customProfession" placeholder="Custom profession if not listed" style="margin-top:.5rem;display:none">
     </div>
-
     <div class="section">
       <div class="label">Bio / About Me</div>
-      <textarea class="input" id="bio" placeholder="Tell us about yourself..."></textarea>
+      <textarea class="input" id="bio" placeholder="Share a bit about yourself in 2-3 sentences..."></textarea>
     </div>
-
+    <div class="section interests-section">
+      <div class="label required">Interests</div>
+      <div class="interests-grid" id="interestsGrid"></div>
+      <div class="custom-interests">Can't find what you like? Add custom ones below (comma-separated):</div>
+      <textarea class="input" id="customInterests" placeholder="e.g., yoga, photography, hiking" style="margin-top:.5rem"></textarea>
+      <div style="font-size:.75rem;color:var(--light);margin-top:.25rem">Select at least 3 for better matches!</div>
+    </div>
     <button class="btn" id="saveBtn">Save Changes</button>
-    <button class="premium-btn">Buy Premium (Coming Soon)</button>
-  </div>
-
+    <button class="premium-btn" onclick="alert('Premium features coming soon!')">Upgrade to Premium</button>
+    <div id="toast" class="toast hidden"></div>
+  </main>
   <nav class="nav">
     <a href="home.html">
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -123,11 +169,9 @@
       <span>Profile</span>
     </a>
   </nav>
-
   <script>
     // === IMG BB API KEY (HARD-CODED AS REQUESTED) ===
     const IMGBB_API_KEY = "cadf18f0796ebaedaa486eff1586bdc4";
-
     const config = {
       apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
       authDomain: "amora-bytales.firebaseapp.com",
@@ -137,37 +181,82 @@
       messagingSenderId: "378090826699",
       appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e"
     };
-
     firebase.initializeApp(config);
     const auth = firebase.auth();
     const db = firebase.database();
-
     const $ = id => document.getElementById(id);
-    const debug = $('debug');
     const photo = $('photo');
     const photoInput = $('photoInput');
     const nameDisplay = $('nameDisplay');
     const ageDisplay = $('ageDisplay');
     const saveBtn = $('saveBtn');
-
+    const toast = $('toast');
+    const userPhoto = $('userPhoto');
+    const progressFill = $('progressFill');
+    const customProfession = $('customProfession');
+    const profession = $('profession');
+    const customInterests = $('customInterests');
+    const interestsGrid = $('interestsGrid');
     let currentUser = null;
     let profileData = {};
-
+    const predefinedInterests = [
+      {id: 'travel', label: 'Travel'},
+      {id: 'reading', label: 'Reading'},
+      {id: 'sports', label: 'Sports'},
+      {id: 'music', label: 'Music'},
+      {id: 'cooking', label: 'Cooking'},
+      {id: 'hiking', label: 'Hiking'},
+      {id: 'photography', label: 'Photography'},
+      {id: 'gaming', label: 'Gaming'},
+      {id: 'yoga', label: 'Yoga'},
+      {id: 'dancing', label: 'Dancing'}
+    ];
+    function showToast(message, isError = false) {
+      toast.textContent = message;
+      toast.classList.remove('hidden', 'show', 'error');
+      if (isError) toast.classList.add('error');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+    function updateProgress() {
+      const fields = ['firstName', 'surname', 'gender', 'interests', 'profession', 'bio', 'nationality'];
+      let completed = 0;
+      fields.forEach(field => {
+        if (field === 'interests') {
+          const interests = [...document.querySelectorAll('.interest-checkbox input:checked')].length + (customInterests.value.trim() ? 1 : 0);
+          if (interests >= 3) completed++;
+        } else if ($(field)?.value.trim()) {
+          completed++;
+        }
+      });
+      const percentage = (completed / fields.length) * 100;
+      progressFill.style.width = `${percentage}%`;
+    }
+    // Render interests checkboxes
+    interestsGrid.innerHTML = predefinedInterests.map(interest => `
+      <label class="interest-checkbox">
+        <input type="checkbox" value="${interest.id}" onchange="updateProgress()">
+        <span>${interest.label}</span>
+      </label>
+    `).join('');
+    // Profession dropdown logic
+    profession.addEventListener('change', () => {
+      customProfession.style.display = profession.value === 'Other' ? 'block' : 'none';
+      updateProgress();
+    });
+    // Custom interests onchange
+    customInterests.addEventListener('input', updateProgress);
     // === AUTH STATE: ONLY LOGGED-IN USER CAN EDIT ===
     auth.onAuthStateChanged(async user => {
       if (!user) {
-        debug.textContent = "Not logged in. Redirecting...";
+        showToast("Not logged in. Redirecting...", true);
         setTimeout(() => location.href = 'index.html', 1000);
         return;
       }
-
       currentUser = user;
-      debug.textContent = "Loading your profile...";
-
       try {
         const snap = await db.ref('users/' + user.uid).once('value');
         profileData = snap.val() || {};
-
         // === FILL FORM WITH USER DATA ===
         $('firstName').value = profileData.firstName || '';
         $('middleName').value = profileData.middleName || '';
@@ -176,89 +265,99 @@
         $('birthYear').value = profileData.birthYear || '';
         $('phone').value = profileData.phone || '';
         $('nationality').value = profileData.nationality || '';
-        $('profession').value = profileData.profession || '';
+        $('country').value = profileData.country || '';
+        $('residence').value = profileData.residence || '';
+        const prof = profileData.profession || '';
+        profession.value = predefinedProfessions.includes(prof) ? prof : 'Other';
+        customProfession.value = profession.value === 'Other' ? prof : '';
+        customProfession.style.display = profession.value === 'Other' ? 'block' : 'none';
         $('bio').value = profileData.bio || '';
-
+        const savedInterests = profileData.interests || [];
+        // Check predefined
+        document.querySelectorAll('.interest-checkbox input').forEach(input => {
+          input.checked = savedInterests.includes(input.value);
+        });
+        // Custom
+        const customOnes = savedInterests.filter(i => !predefinedInterests.some(p => p.id === i));
+        customInterests.value = customOnes.join(', ');
         // === DISPLAY NAME & AGE ===
         const fullName = `${profileData.firstName || ''} ${profileData.surname || ''}`.trim() || user.email.split('@')[0];
         nameDisplay.textContent = fullName;
-
         const age = profileData.birthYear ? new Date().getFullYear() - profileData.birthYear : '?';
         ageDisplay.textContent = `${age} years old`;
-
-        // === DISPLAY PHOTO FROM IMGBB URL ===
-        if (profileData.profilePic) {
-          photo.src = profileData.profilePic;
-        } else {
-          photo.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e91e63&color=fff&size=120`;
-        }
-
-        debug.textContent = "Edit and save changes.";
-
+        // === DISPLAY PHOTO ===
+        const picUrl = profileData.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e91e63&color=fff&size=120`;
+        photo.src = picUrl;
+        userPhoto.src = picUrl.replace('size=120', 'size=36');
+        updateProgress();
+        showToast("Profile loaded. Edit and save changes.");
       } catch (err) {
-        debug.textContent = "Error: " + err.message;
+        showToast("Error loading profile: " + err.message, true);
       }
     });
-
-    // === PHOTO UPLOAD: ONLY TO CURRENT USER'S PROFILE ===
+    const predefinedProfessions = ['Software Developer', 'Doctor', 'Teacher', 'Engineer', 'Artist', 'Entrepreneur'];
+    // === PHOTO UPLOAD ===
     photoInput.addEventListener('change', async () => {
-      if (!currentUser) {
-        debug.textContent = "Error: Not logged in.";
-        return;
-      }
-
+      if (!currentUser || !photoInput.files[0]) return;
       const file = photoInput.files[0];
-      if (!file) return;
-
-      debug.textContent = "Uploading photo...";
+      showToast("Uploading photo...");
       saveBtn.disabled = true;
-
       try {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
           const base64 = reader.result.split(',')[1];
-
           const formData = new FormData();
           formData.append('key', IMGBB_API_KEY);
           formData.append('image', base64);
-
-          const response = await fetch('https://api.imgbb.com/1/upload', {
-            method: 'POST',
-            body: formData
-          });
-
+          const response = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
           const result = await response.json();
-
           if (result.success) {
             const imageUrl = result.data.url;
-
-            // === STRICT: ONLY WRITE TO CURRENT USER'S UID ===
             await db.ref('users/' + currentUser.uid + '/profilePic').set(imageUrl);
-
             photo.src = imageUrl;
-            debug.textContent = "Photo uploaded!";
+            userPhoto.src = imageUrl.replace('size=120', 'size=36');
+            showToast("Photo updated!");
           } else {
-            debug.textContent = "Upload failed: " + (result.error?.message || "Unknown error");
+            showToast("Upload failed: " + (result.error?.message || "Unknown error"), true);
           }
         };
       } catch (err) {
-        debug.textContent = "Upload error: " + err.message;
+        showToast("Upload error: " + err.message, true);
       } finally {
         saveBtn.disabled = false;
+        photoInput.value = '';
       }
     });
-
-    // === SAVE PROFILE: ONLY CURRENT USER CAN UPDATE THEIR DATA ===
+    // === SAVE PROFILE ===
     saveBtn.addEventListener('click', async () => {
       if (!currentUser) {
-        debug.textContent = "Error: Not logged in.";
+        showToast("Not logged in.", true);
         return;
       }
-
-      saveBtn.textContent = "Saving...";
+      // Validation
+      if (!$('gender').value) {
+        showToast("Please select your gender for better matches!", true);
+        $('gender').focus();
+        return;
+      }
+      const selectedInterests = [...document.querySelectorAll('.interest-checkbox input:checked')].map(input => input.value);
+      const customValue = customInterests.value.trim();
+      const customInterestsList = customValue ? customValue.split(',').map(i => i.trim()).filter(Boolean) : [];
+      const allInterests = [...selectedInterests, ...customInterestsList];
+      if (allInterests.length < 3) {
+        if (!confirm("Add at least 3 interests for better recommendations?")) {
+          return;
+        }
+      }
+      const profValue = profession.value === 'Other' ? customProfession.value.trim() : profession.value;
+      if (profession.value === 'Other' && !profValue) {
+        showToast("Please specify your profession.", true);
+        return;
+      }
+      saveBtn.textContent = '';
+      saveBtn.classList.add('saving');
       saveBtn.disabled = true;
-
       const updates = {
         firstName: $('firstName').value.trim(),
         middleName: $('middleName').value.trim(),
@@ -267,21 +366,27 @@
         birthYear: parseInt($('birthYear').value) || null,
         phone: $('phone').value.trim(),
         nationality: $('nationality').value.trim(),
-        profession: $('profession').value.trim(),
-        bio: $('bio').value.trim()
+        country: $('country').value.trim(),
+        residence: $('residence').value.trim(),
+        profession: profValue || '',
+        bio: $('bio').value.trim(),
+        interests: allInterests
       };
-
       try {
-        // === STRICT: ONLY UPDATE CURRENT USER'S PATH ===
         await db.ref('users/' + currentUser.uid).update(updates);
-        debug.textContent = "Profile saved!";
+        showToast("Profile saved successfully!");
         setTimeout(() => location.reload(), 1000);
       } catch (err) {
-        debug.textContent = "Save failed: " + err.message;
+        showToast("Save failed: " + err.message, true);
       } finally {
-        saveBtn.textContent = "Save Changes";
+        saveBtn.textContent = 'Save Changes';
+        saveBtn.classList.remove('saving');
         saveBtn.disabled = false;
       }
+    });
+    // Attach updateProgress to all inputs
+    ['firstName', 'surname', 'gender', 'birthYear', 'phone', 'nationality', 'country', 'residence', 'bio'].forEach(id => {
+      $(id)?.addEventListener('input', updateProgress);
     });
   </script>
 </body>

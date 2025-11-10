@@ -18,7 +18,7 @@
     .search:focus{border-color:var(--accent)}
     .user-profile{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem}
     .user-profile img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
-    .post-btn{width:40px;height:40px;border-radius:50%;background:#f59e0b;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:not-allowed;opacity:0.7}
+    .post-btn{width:40px;height:40px;border-radius:50%;background:#f59e0b;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:not-allowed;opacity:0.7;flex-shrink:0}
     main{margin-top:70px;padding-bottom:80px}
     .section{margin:1.5rem}
     h2{font-size:1.2rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
@@ -28,18 +28,28 @@
     .story img{width:70px;height:70px;border-radius:50%;border:3px solid var(--accent);margin-bottom:.5rem;object-fit:cover}
     .story .name{font-size:.8rem;font-weight:500}
     .story .nationality{font-size:.7rem;color:var(--light);margin-top:2px}
-    .recs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem}
-    .card{background:var(--card);border-radius:var(--radius);padding:1rem;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:.3s;border:1px solid var(--border)}
+    .recs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+    .card{display:flex;align-items:flex-start;gap:1rem;background:var(--card);border-radius:var(--radius);padding:1rem;cursor:pointer;box-shadow:var(--shadow);transition:.3s;border:1px solid var(--border)}
     .card:hover{transform:translateY(-5px);box-shadow:0 8px 30px rgba(233,30,99,.15);border-color:var(--accent)}
-    .card img{width:80px;height:80px;border-radius:50%;margin-bottom:.75rem;object-fit:cover;border:2px solid var(--border)}
+    .card img{width:60px;height:60px;border-radius:50%;margin:0;flex-shrink:0;object-fit:cover;border:2px solid var(--border)}
+    .card-info{flex:1;display:flex;flex-direction:column;gap:.25rem}
     .card .name{font-weight:600;font-size:1rem}
-    .card .age{color:var(--light);font-size:.9rem;margin-top:.25rem}
+    .card .age,.card .nationality,.card .interests,.card .email{color:var(--light);font-size:.85rem}
+    .card .interests{font-style:italic}
     .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:.75rem 0;box-shadow:0 -2px 10px rgba(0,0,0,.05);z-index:100}
     .nav a{display:flex;flex-direction:column;align-items:center;color:var(--light);text-decoration:none;font-size:.7rem}
     .nav a.active{color:var(--accent)}
     .nav svg{width:24px;height:24px;margin-bottom:.25rem}
     .status{font-size:.85rem;color:var(--light);text-align:center;margin:1rem 0}
     .premium-label{font-size:.7rem;background:#f59e0b;color:#fff;padding:2px 6px;border-radius:8px;font-weight:600}
+    @media (max-width: 768px) {
+      .header{padding:1rem;gap:.5rem}
+      .search{flex:none;width:120px;padding:.5rem .75rem;font-size:.8rem}
+      .post-btn{width:36px;height:36px;font-size:.9rem}
+      .user-profile img{width:32px;height:32px}
+      .logo{width:32px;height:32px}
+      .recs{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
@@ -49,24 +59,19 @@
     <div class="post-btn" onclick="alert('Only Premium users can post!')" title="Premium Feature">+</div>
     <a href="profile.html" class="user-profile" id="userProfile">
       <img id="userPhoto" src="" alt="You">
-      <span id="userName">You</span>
     </a>
   </header>
-
   <main>
     <div class="status">New Profiles in AMORA</div>
-
     <section class="section">
       <h2>Stories <span class="premium-label">Premium</span></h2>
       <div class="stories" id="stories"></div>
     </section>
-
     <section class="section">
       <h2>You may like</h2>
       <div class="recs" id="recs"></div>
     </section>
   </main>
-
   <nav class="nav">
     <a href="home.html" class="active">
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -81,7 +86,6 @@
       <span>Alerts</span>
     </a>
   </nav>
-
   <script>
     const config = {
       apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
@@ -92,45 +96,33 @@
       messagingSenderId: "378090826699",
       appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e"
     };
-
     firebase.initializeApp(config);
     const auth = firebase.auth();
     const db = firebase.database();
-
     const $ = id => document.getElementById(id);
     const stories = $('stories');
     const recs = $('recs');
     const searchInput = $('search');
     const userPhoto = $('userPhoto');
-    const userName = $('userName');
-
     let allUsers = [];
     let currentUser = null;
-
     auth.onAuthStateChanged(async user => {
       if (!user) {
         setTimeout(() => location.href = 'index.html', 1000);
         return;
       }
-
       currentUser = user;
-
       try {
         const snap = await db.ref('users').once('value');
         const data = snap.val();
         if (!data) return;
-
-        allUsers = Object.entries(data).map(([uid, u]) => ({ ...u, uid }));
+        allUsers = Object.entries(data).map(([uid, u]) => ({ ...u, uid, email: u.email || '' }));
         const others = allUsers.filter(u => u.uid !== user.uid);
-
         // === UPDATE TOP-RIGHT PROFILE ===
         const me = allUsers.find(u => u.uid === user.uid);
         const myName = `${me?.firstName || ''} ${me?.surname || ''}`.trim() || user.email.split('@')[0];
-        userName.textContent = myName;
         userPhoto.src = me?.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(myName)}&background=e91e63&color=fff&size=36`;
-
         renderUsers(others);
-
         // Search
         searchInput.addEventListener('input', () => {
           const query = searchInput.value.toLowerCase().trim();
@@ -140,19 +132,16 @@
           });
           renderUsers(filtered);
         });
-
       } catch (err) {
         console.error(err);
       }
     });
-
     function renderUsers(users) {
       if (users.length === 0) {
         stories.innerHTML = "<p>No users found.</p>";
         recs.innerHTML = "<p>No matches.</p>";
         return;
       }
-
       // STORIES: Show Nationality
       stories.innerHTML = users.map(u => {
         const name = u.firstName || u.otherName || 'User';
@@ -164,27 +153,42 @@
           <div class="nationality">${nationality}</div>
         </div>`;
       }).join('');
-
       // RECOMMENDED
       const myGender = allUsers.find(u => u.uid === currentUser.uid)?.gender;
-      const opposite = myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : null;
-
-      let recsList = users;
-      if (opposite) {
-        const opp = users.filter(u => u.gender === opposite);
-        recsList = opp.length > 0 ? opp : users;
+      if (!myGender) {
+        recs.innerHTML = '<div class="status" style="text-align:center; padding:2rem; background:var(--card); border-radius:var(--radius); border:1px solid var(--border);">Please update your gender in your profile to see personalized recommendations. <a href="profile.html" style="color:var(--accent);">Go to Profile</a></div>';
+        return;
+      }
+      let recsList = [];
+      if (myGender === 'male') {
+        recsList = users.filter(u => u.gender === 'female');
+      } else if (myGender === 'female') {
+        recsList = users.filter(u => u.gender === 'male');
+      } else {
+        recsList = users;
       }
       recsList = recsList.sort(() => Math.random() - 0.5).slice(0, 6);
-
+      if (recsList.length === 0) {
+        recs.innerHTML = '<p>No matches yet. Update more profiles!</p>';
+        return;
+      }
       recs.innerHTML = recsList.map(u => {
         const name = u.firstName || u.otherName || 'User';
-        const surname = u.surname ? ` ${u.surname[0]}.` : '';
+        const surname = u.surname ? ` ${u.surname}` : '';
         const age = u.birthYear ? new Date().getFullYear() - u.birthYear : '?';
-        const pic = u.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=80`;
+        const nationality = u.nationality || 'Not specified';
+        const interests = u.interests ? (Array.isArray(u.interests) ? u.interests.join(', ') : u.interests) : 'No interests listed';
+        const email = u.email || 'No email';
+        const pic = u.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=60`;
         return `<div class="card" onclick="location.href='profile.html?uid=${u.uid}'">
           <img src="${pic}" alt="${name}">
-          <div class="name">${name}${surname}</div>
-          <div class="age">${age} years old</div>
+          <div class="card-info">
+            <div class="name">${name}${surname}</div>
+            <div class="age">${age} years old</div>
+            <div class="nationality">${nationality}</div>
+            <div class="interests">Interests: ${interests}</div>
+            <div class="email">${email}</div>
+          </div>
         </div>`;
       }).join('');
     }
