@@ -196,7 +196,8 @@
       if (messagesRef && messagesListener) {
         messagesRef.off('child_added', messagesListener);
       }
-      messagesRef = db.ref(`user-chats/${currentUser.uid}/${otherUid}/messages`);
+      const chatId = [currentUser.uid, otherUid].sort().join('_');
+      messagesRef = db.ref(`chats/${chatId}/messages`);
       messagesListener = snap => {
         const msg = snap.val();
         if (msg) {
@@ -243,16 +244,12 @@
     function sendMessage() {
       const text = messageInput.value.trim();
       if (!text || !currentChatUid) return;
-      const msg = {
+      const chatId = [currentUser.uid, currentChatUid].sort().join('_');
+      db.ref(`chats/${chatId}/messages`).push({
         text,
         senderUid: currentUser.uid,
         timestamp: firebase.database.ServerValue.TIMESTAMP
-      };
-      const newKey = db.ref().push().key;
-      const updates = {};
-      updates[`user-chats/${currentUser.uid}/${currentChatUid}/messages/${newKey}`] = msg;
-      updates[`user-chats/${currentChatUid}/${currentUser.uid}/messages/${newKey}`] = msg;
-      db.ref().update(updates).then(() => {
+      }).then(() => {
         messageInput.value = '';
       }).catch(err => {
         console.error('Error sending message:', err);
