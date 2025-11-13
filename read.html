@@ -19,7 +19,7 @@
     main{margin-top:70px;padding:0;padding-bottom:80px}
     .messages{flex:1;background:var(--card);border-radius:0 0 var(--radius) var(--radius);padding:1rem;height:calc(100vh - 200px);overflow-y:auto;display:flex;flex-direction:column;gap:.5rem}
     .date-divider{text-align:center;color:var(--light);font-size:.8rem;margin:1rem 0;position:sticky;top:0;background:var(--bg);z-index:10;padding:0.5rem 0;border-radius:var(--radius)}
-    .message{display:flex;flex-direction:column;gap:.25rem;max-width:80%;padding:.75rem;border-radius:var(--radius);box-shadow:var(--shadow);position:relative}
+    .message{display:flex;flex-direction:column;gap:.25rem;max-width:80%;padding:.75rem;border-radius:var(--radius);box-shadow:var(--shadow);position:relative;cursor:pointer}
     .message.sent{align-self:flex-end;background:var(--accent);color:#fff}
     .message.received{align-self:flex-start;background:#f0f0f0;color:var(--text)}
     .message .time{font-size:.7rem;color:var(--light);opacity:.7}
@@ -191,6 +191,7 @@
       }
       const div = document.createElement('div');
       div.className = `message ${isSent ? 'sent' : 'received'}`;
+      div.onclick = () => replyToMessage(msgId, msg.text.substring(0, 30));
       const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
       let content = '';
       if (msg.type === 'image') {
@@ -211,9 +212,9 @@
     function getReadStatus(msg) {
       const keys = Object.keys(msg.readBy || {});
       if (keys.length > 1) {
-        return '<span style="color: white">✓✓</span>'; // white double tick for read
+        return '<span style="color: white">✓✓</span>'; // white for read
       } else {
-        return '<span style="color: #ccc">✓✓</span>'; // light gray for delivered
+        return '<span style="color: #ccc">✓✓</span>'; // gray for delivered
       }
     }
     function formatDate(timestamp) {
@@ -222,6 +223,11 @@
       if (date.toDateString() === now.toDateString()) return 'Today';
       if (date.toDateString() === new Date(now - 86400000).toDateString()) return 'Yesterday';
       return date.toLocaleDateString([], {month: 'short', day: 'numeric', year: 'numeric'});
+    }
+    function replyToMessage(msgId, snippet) {
+      messageInput.placeholder = `Reply to: ${snippet}...`;
+      messageInput.focus();
+      replyingTo = msgId;
     }
     async function handleImageUpload() {
       const file = imageInput.files[0];
@@ -265,6 +271,10 @@
         readBy: {[currentUser.uid]: true}
       };
       if (caption) msg.caption = caption;
+      if (replyingTo) {
+        msg.replyTo = replyingTo;
+        replyingTo = null;
+      }
       db.ref(`chats/${chatId}/messages`).push(msg).then(() => {
         messageInput.value = '';
         messageInput.placeholder = 'Type a message...';
