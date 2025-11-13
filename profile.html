@@ -18,14 +18,16 @@
     .user-profile{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem}
     .user-profile img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
     main{margin-top:70px;padding:1.5rem;padding-bottom:80px}
-    .profile-header{text-align:center;margin-bottom:2rem}
-    .profile-pic{position:relative;width:120px;height:120px;margin:0 auto 1rem;border-radius:50%;overflow:hidden;box-shadow:var(--shadow);transition:.3s}
+    .profile-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:2rem}
+    .profile-pic{position:relative;width:100px;height:100px;border-radius:50%;overflow:hidden;box-shadow:var(--shadow);transition:.3s;flex-shrink:0}
     .profile-pic:hover{transform:scale(1.05)}
     .profile-pic img{width:100%;height:100%;object-fit:cover}
-    .edit-photo{position:absolute;bottom:8px;right:8px;background:var(--accent);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:.2s}
-    .edit-photo:hover{background:#c81c56;transform:scale(1.1)}
-    .name{font-size:1.4rem;font-weight:700;margin-bottom:.5rem}
-    .age{font-size:1rem;color:var(--light);margin-bottom:1.5rem}
+    .profile-info{display:flex;flex-direction:column;justify-content:center}
+    .name{font-size:1.4rem;font-weight:700;margin-bottom:.25rem}
+    .birthday{font-size:1rem;color:var(--light);margin-bottom:.5rem}
+    .change-photo-btn{background:var(--accent);color:#fff;padding:.5rem 1rem;border:none;border-radius:var(--radius);font-weight:500;cursor:pointer;transition:.2s;display:inline-block;margin-bottom:1rem}
+    .change-photo-btn:hover{background:#c81c56;transform:translateY(-1px)}
+    .divider{border-top:1px solid var(--border);margin:1.5rem 0}
     .section{margin-bottom:1.5rem}
     .label{font-size:.8rem;color:var(--light);margin-bottom:.5rem;display:block;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
     .label.required::after{content:' *';color:var(--accent)}
@@ -36,18 +38,11 @@
     textarea{resize:vertical;min-height:60px}
     .row{display:flex;gap:1rem}
     .row > *{flex:1}
-    .interests-section{background:linear-gradient(135deg,rgba(16,185,129,.05) 0%,rgba(59,130,246,.05) 100%);padding:1rem;border-radius:var(--radius);border:1px solid var(--border)}
-    .interests-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem;margin-bottom:1rem}
-    .interest-checkbox{display:flex;align-items:center;gap:.5rem;font-size:.9rem;cursor:pointer}
-    .interest-checkbox input{width:auto;margin:0}
-    .custom-interests{font-size:.8rem;color:var(--light);margin-top:.25rem}
     .btn{background:var(--accent);color:#fff;padding:.75rem;border:none;border-radius:var(--radius);font-weight:600;width:100%;cursor:pointer;margin-top:1rem;transition:.2s;position:relative;overflow:hidden}
     .btn:hover{background:#c81c56;transform:translateY(-1px)}
     .btn:disabled{background:#ccc;cursor:not-allowed;transform:none}
     .btn.saving::after{content:'';position:absolute;top:50%;left:50%;width:20px;height:20px;border:2px solid transparent;border-top:2px solid #fff;border-radius:50%;animation:spin 1s linear infinite;transform:translate(-50%,-50%)}
     @keyframes spin{0%{transform:translate(-50%,-50%) rotate(0deg)}100%{transform:translate(-50%,-50%) rotate(360deg)}}
-    .premium-btn{background:var(--green);color:#fff;padding:.75rem;border:none;border-radius:var(--radius);font-weight:600;width:100%;cursor:pointer;opacity:1;margin-top:.5rem;transition:.2s}
-    .premium-btn:hover{background:#059669;transform:translateY(-1px)}
     .toast{position:fixed;top:20px;right:20px;padding:1rem 1.5rem;background:var(--accent);color:#fff;border-radius:var(--radius);box-shadow:var(--shadow);transform:translateX(100%);transition:.3s;z-index:200;min-width:250px}
     .toast.show{transform:translateX(0)}
     .toast.error{background:#ef4444}
@@ -59,12 +54,16 @@
     .hidden{display:none}
     .progress-bar{margin:1rem 0;background:var(--border);height:4px;border-radius:2px;overflow:hidden}
     .progress-fill{background:var(--blue);height:100%;transition:.3s;border-radius:2px}
+    .other-options{margin-top:2rem;display:grid;grid-template-columns:repeat(2, 1fr);gap:1rem}
+    .other-options a{display:block;background:var(--card);padding:.75rem 1rem;border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem;text-align:center;transition:.2s}
+    .other-options a:hover{background:#f9fafb;transform:translateY(-1px)}
     @media (max-width: 768px) {
       .header{padding:1rem;gap:.5rem}
       main{padding:1rem}
       .row{flex-direction:column;gap:.5rem}
-      .profile-pic{width:100px;height:100px}
+      .profile-pic{width:80px;height:80px}
       .name{font-size:1.2rem}
+      .other-options{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -80,12 +79,15 @@
     <div class="profile-header">
       <div class="profile-pic" id="profilePicContainer">
         <img id="photo" src="" alt="Profile">
-        <label class="edit-photo" for="photoInput">📷</label>
+      </div>
+      <div class="profile-info">
+        <div class="name" id="nameDisplay">Loading...</div>
+        <div class="birthday" id="birthdayDisplay">Birthday: ? (? years old)</div>
+        <label class="change-photo-btn" for="photoInput">Change Profile Photo</label>
         <input type="file" id="photoInput" accept="image/*" class="hidden">
       </div>
-      <div class="name" id="nameDisplay">Loading...</div>
-      <div class="age" id="ageDisplay">? years old</div>
     </div>
+    <div class="divider"></div>
     <div class="progress-bar">
       <div class="progress-fill" id="progressFill" style="width:0%"></div>
     </div>
@@ -107,8 +109,12 @@
       </select>
     </div>
     <div class="section">
-      <div class="label">Birth Year</div>
-      <input type="number" class="input" id="birthYear" placeholder="e.g. 1998" min="1900" max="2010">
+      <div class="label required">Date of Birth</div>
+      <input type="date" class="input" id="birthDate" placeholder="Select your birth date">
+    </div>
+    <div class="section">
+      <div class="label">Birth Year (Auto-filled)</div>
+      <input type="number" class="input" id="birthYear" placeholder="e.g. 1998" readonly>
     </div>
     <div class="section">
       <div class="label">Phone</div>
@@ -127,6 +133,10 @@
       <input type="text" class="input" id="residence" placeholder="e.g. Nairobi">
     </div>
     <div class="section">
+      <div class="label">Bio / About Me</div>
+      <textarea class="input" id="bio" placeholder="Share a bit about yourself in 2-3 sentences..."></textarea>
+    </div>
+    <div class="section">
       <div class="label">Profession</div>
       <select class="select" id="profession">
         <option value="">Select or Type Your Profession</option>
@@ -141,18 +151,30 @@
       <input type="text" class="input" id="customProfession" placeholder="Custom profession if not listed" style="margin-top:.5rem;display:none">
     </div>
     <div class="section">
-      <div class="label">Bio / About Me</div>
-      <textarea class="input" id="bio" placeholder="Share a bit about yourself in 2-3 sentences..."></textarea>
+      <div class="label required">Reason for Joining AMORA</div>
+      <select class="select" id="reason" required>
+        <option value="">Select Reason</option>
+        <option value="serious">Serious Dating</option>
+        <option value="casual">Casual Dating</option>
+        <option value="friendship">Friendship</option>
+      </select>
     </div>
-    <div class="section interests-section">
-      <div class="label required">Interests</div>
-      <div class="interests-grid" id="interestsGrid"></div>
-      <div class="custom-interests">Can't find what you like? Add custom ones below (comma-separated):</div>
-      <textarea class="input" id="customInterests" placeholder="e.g., yoga, photography, hiking" style="margin-top:.5rem"></textarea>
-      <div style="font-size:.75rem;color:var(--light);margin-top:.25rem">Select at least 3 for better matches!</div>
+    <div class="section">
+      <div class="label">Height (in cm)</div>
+      <input type="number" class="input" id="height" placeholder="e.g. 170" min="100" max="250">
     </div>
-    <button class="btn" id="saveBtn">Save Changes</button>
-    <button class="premium-btn" onclick="alert('Premium features coming soon!')">Upgrade to Premium</button>
+    <div class="section">
+      <div class="label required">Account Type</div>
+      <select class="select" id="accountType">
+        <option value="free">Free</option>
+        <option value="premium">Premium</option>
+      </select>
+    </div>
+    <button class="btn hidden" id="saveBtn">Save Changes</button>
+    <div class="other-options">
+      <a href="interest.html">My Interests</a>
+      <a href="post.html">My Posts</a>
+    </div>
     <div id="toast" class="toast hidden"></div>
   </main>
   <nav class="nav">
@@ -170,7 +192,7 @@
     </a>
   </nav>
   <script>
-    // === IMG BB API KEY (HARD-CODED AS REQUESTED) ===
+    // IMG BB API KEY
     const IMGBB_API_KEY = "cadf18f0796ebaedaa486eff1586bdc4";
     const config = {
       apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
@@ -188,29 +210,17 @@
     const photo = $('photo');
     const photoInput = $('photoInput');
     const nameDisplay = $('nameDisplay');
-    const ageDisplay = $('ageDisplay');
+    const birthdayDisplay = $('birthdayDisplay');
     const saveBtn = $('saveBtn');
     const toast = $('toast');
     const userPhoto = $('userPhoto');
     const progressFill = $('progressFill');
     const customProfession = $('customProfession');
     const profession = $('profession');
-    const customInterests = $('customInterests');
-    const interestsGrid = $('interestsGrid');
     let currentUser = null;
     let profileData = {};
-    const predefinedInterests = [
-      {id: 'travel', label: 'Travel'},
-      {id: 'reading', label: 'Reading'},
-      {id: 'sports', label: 'Sports'},
-      {id: 'music', label: 'Music'},
-      {id: 'cooking', label: 'Cooking'},
-      {id: 'hiking', label: 'Hiking'},
-      {id: 'photography', label: 'Photography'},
-      {id: 'gaming', label: 'Gaming'},
-      {id: 'yoga', label: 'Yoga'},
-      {id: 'dancing', label: 'Dancing'}
-    ];
+    let initialData = {};
+    
     function showToast(message, isError = false) {
       toast.textContent = message;
       toast.classList.remove('hidden', 'show', 'error');
@@ -218,35 +228,100 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
+    
+    function calculateAge(birthDateStr) {
+      if (!birthDateStr) return '?';
+      const birthDate = new Date(birthDateStr);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    }
+    
     function updateProgress() {
-      const fields = ['firstName', 'surname', 'gender', 'interests', 'profession', 'bio', 'nationality'];
+      const fields = ['firstName', 'surname', 'gender', 'birthDate', 'profession', 'bio', 'nationality', 'reason', 'height', 'accountType'];
       let completed = 0;
       fields.forEach(field => {
-        if (field === 'interests') {
-          const interests = [...document.querySelectorAll('.interest-checkbox input:checked')].length + (customInterests.value.trim() ? 1 : 0);
-          if (interests >= 3) completed++;
-        } else if ($(field)?.value.trim()) {
-          completed++;
+        if ($(field)?.value.trim()) completed++;
+      });
+      if (profileData.interests?.length >= 3) completed++;
+      const percentage = (completed / (fields.length + 1)) * 100;
+      progressFill.style.width = `${percentage}%`;
+      if (percentage < 100) {
+        showToast(`Your profile is ${Math.round(percentage)}% complete. Fill in all details for better matches!`);
+      }
+    }
+    
+    function checkForChanges() {
+      const fields = ['firstName', 'middleName', 'surname', 'gender', 'birthDate', 'phone', 'nationality', 'country', 'residence', 'bio', 'profession', 'customProfession', 'reason', 'height', 'accountType'];
+      let hasChanges = false;
+      fields.forEach(field => {
+        const input = $(field);
+        if (input) {
+          const currentValue = input.value.trim();
+          const initialValue = initialData[field] || '';
+          if (currentValue !== initialValue) {
+            hasChanges = true;
+          }
         }
       });
-      const percentage = (completed / fields.length) * 100;
-      progressFill.style.width = `${percentage}%`;
+      if (photoInput.files.length > 0) hasChanges = true;
+      saveBtn.classList.toggle('hidden', !hasChanges);
     }
-    // Render interests checkboxes
-    interestsGrid.innerHTML = predefinedInterests.map(interest => `
-      <label class="interest-checkbox">
-        <input type="checkbox" value="${interest.id}" onchange="updateProgress()">
-        <span>${interest.label}</span>
-      </label>
-    `).join('');
+    
+    // Auto-fill birth year from date of birth
+    $('birthDate').addEventListener('change', () => {
+      const birthDate = $('birthDate').value;
+      if (birthDate) {
+        const year = new Date(birthDate).getFullYear();
+        $('birthYear').value = year;
+      } else {
+        $('birthYear').value = '';
+      }
+      checkForChanges();
+      updateProgress();
+    });
+    
     // Profession dropdown logic
     profession.addEventListener('change', () => {
       customProfession.style.display = profession.value === 'Other' ? 'block' : 'none';
+      checkForChanges();
       updateProgress();
     });
-    // Custom interests onchange
-    customInterests.addEventListener('input', updateProgress);
-    // === AUTH STATE: ONLY LOGGED-IN USER CAN EDIT ===
+    
+    // Capitalize first letter for names
+    ['firstName', 'middleName', 'surname'].forEach(id => {
+      $(id)?.addEventListener('blur', () => {
+        const input = $(id);
+        if (input.value) {
+          input.value = input.value.charAt(0).toUpperCase() + input.value.slice(1);
+        }
+        checkForChanges();
+      });
+    });
+    
+    // Account type logic
+    $('accountType').addEventListener('change', () => {
+      if ($('accountType').value === 'premium') {
+        showToast("Premium accounts coming soon! Reverting to Free.", true);
+        $('accountType').value = 'free';
+      }
+      checkForChanges();
+      updateProgress();
+    });
+    
+    // Attach change listeners for all inputs
+    ['firstName', 'middleName', 'surname', 'gender', 'phone', 'nationality', 'country', 'residence', 'bio', 'customProfession', 'reason', 'height'].forEach(id => {
+      $(id)?.addEventListener('input', () => {
+        checkForChanges();
+        updateProgress();
+      });
+    });
+    
+    // AUTH STATE
     auth.onAuthStateChanged(async user => {
       if (!user) {
         showToast("Not logged in. Redirecting...", true);
@@ -257,35 +332,35 @@
       try {
         const snap = await db.ref('users/' + user.uid).once('value');
         profileData = snap.val() || {};
-        // === FILL FORM WITH USER DATA ===
-        $('firstName').value = profileData.firstName || '';
-        $('middleName').value = profileData.middleName || '';
-        $('surname').value = profileData.surname || '';
-        $('gender').value = profileData.gender || '';
-        $('birthYear').value = profileData.birthYear || '';
-        $('phone').value = profileData.phone || '';
-        $('nationality').value = profileData.nationality || '';
-        $('country').value = profileData.country || '';
-        $('residence').value = profileData.residence || '';
+        // FILL FORM WITH USER DATA
+        $('firstName').value = initialData.firstName = profileData.firstName || '';
+        $('middleName').value = initialData.middleName = profileData.middleName || '';
+        $('surname').value = initialData.surname = profileData.surname || '';
+        $('gender').value = initialData.gender = profileData.gender || '';
+        if (profileData.gender) {
+          $('gender').disabled = true;
+        }
+        $('birthDate').value = initialData.birthDate = profileData.birthDate || '';
+        $('birthYear').value = profileData.birthDate ? new Date(profileData.birthDate).getFullYear() : '';
+        $('phone').value = initialData.phone = profileData.phone || '';
+        $('nationality').value = initialData.nationality = profileData.nationality || '';
+        $('country').value = initialData.country = profileData.country || '';
+        $('residence').value = initialData.residence = profileData.residence || '';
+        $('bio').value = initialData.bio = profileData.bio || '';
         const prof = profileData.profession || '';
-        profession.value = predefinedProfessions.includes(prof) ? prof : 'Other';
-        customProfession.value = profession.value === 'Other' ? prof : '';
+        profession.value = initialData.profession = predefinedProfessions.includes(prof) ? prof : 'Other';
+        customProfession.value = initialData.customProfession = profession.value === 'Other' ? prof : '';
         customProfession.style.display = profession.value === 'Other' ? 'block' : 'none';
-        $('bio').value = profileData.bio || '';
-        const savedInterests = profileData.interests || [];
-        // Check predefined
-        document.querySelectorAll('.interest-checkbox input').forEach(input => {
-          input.checked = savedInterests.includes(input.value);
-        });
-        // Custom
-        const customOnes = savedInterests.filter(i => !predefinedInterests.some(p => p.id === i));
-        customInterests.value = customOnes.join(', ');
-        // === DISPLAY NAME & AGE ===
-        const fullName = `${profileData.firstName || ''} ${profileData.surname || ''}`.trim() || user.email.split('@')[0];
+        $('reason').value = initialData.reason = profileData.reason || '';
+        $('height').value = initialData.height = profileData.height || '';
+        $('accountType').value = initialData.accountType = profileData.accountType || 'free';
+        // DISPLAY NAME & BIRTHDAY
+        const fullName = [profileData.firstName, profileData.middleName, profileData.surname].filter(Boolean).join(' ') || user.email.split('@')[0];
         nameDisplay.textContent = fullName;
-        const age = profileData.birthYear ? new Date().getFullYear() - profileData.birthYear : '?';
-        ageDisplay.textContent = `${age} years old`;
-        // === DISPLAY PHOTO ===
+        const birthDateStr = profileData.birthDate ? new Date(profileData.birthDate).toLocaleDateString() : '?';
+        const age = calculateAge(profileData.birthDate);
+        birthdayDisplay.textContent = `Birthday: ${birthDateStr} (${age} years old)`;
+        // DISPLAY PHOTO
         const picUrl = profileData.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e91e63&color=fff&size=120`;
         photo.src = picUrl;
         userPhoto.src = picUrl.replace('size=120', 'size=36');
@@ -295,8 +370,10 @@
         showToast("Error loading profile: " + err.message, true);
       }
     });
+    
     const predefinedProfessions = ['Software Developer', 'Doctor', 'Teacher', 'Engineer', 'Artist', 'Entrepreneur'];
-    // === PHOTO UPLOAD ===
+    
+    // PHOTO UPLOAD
     photoInput.addEventListener('change', async () => {
       if (!currentUser || !photoInput.files[0]) return;
       const file = photoInput.files[0];
@@ -318,6 +395,7 @@
             photo.src = imageUrl;
             userPhoto.src = imageUrl.replace('size=120', 'size=36');
             showToast("Photo updated!");
+            checkForChanges();
           } else {
             showToast("Upload failed: " + (result.error?.message || "Unknown error"), true);
           }
@@ -329,26 +407,26 @@
         photoInput.value = '';
       }
     });
-    // === SAVE PROFILE ===
+    
+    // SAVE PROFILE
     saveBtn.addEventListener('click', async () => {
       if (!currentUser) {
         showToast("Not logged in.", true);
         return;
       }
       // Validation
+      if (!$('firstName').value.trim() || !$('surname').value.trim()) {
+        showToast("Please enter your full name.", true);
+        return;
+      }
       if (!$('gender').value) {
-        showToast("Please select your gender for better matches!", true);
+        showToast("Please select your gender.", true);
         $('gender').focus();
         return;
       }
-      const selectedInterests = [...document.querySelectorAll('.interest-checkbox input:checked')].map(input => input.value);
-      const customValue = customInterests.value.trim();
-      const customInterestsList = customValue ? customValue.split(',').map(i => i.trim()).filter(Boolean) : [];
-      const allInterests = [...selectedInterests, ...customInterestsList];
-      if (allInterests.length < 3) {
-        if (!confirm("Add at least 3 interests for better recommendations?")) {
-          return;
-        }
+      if (!$('reason').value) {
+        showToast("Please select your reason for joining.", true);
+        return;
       }
       const profValue = profession.value === 'Other' ? customProfession.value.trim() : profession.value;
       if (profession.value === 'Other' && !profValue) {
@@ -363,6 +441,7 @@
         middleName: $('middleName').value.trim(),
         surname: $('surname').value.trim(),
         gender: $('gender').value,
+        birthDate: $('birthDate').value || null,
         birthYear: parseInt($('birthYear').value) || null,
         phone: $('phone').value.trim(),
         nationality: $('nationality').value.trim(),
@@ -370,7 +449,9 @@
         residence: $('residence').value.trim(),
         profession: profValue || '',
         bio: $('bio').value.trim(),
-        interests: allInterests
+        reason: $('reason').value,
+        height: parseInt($('height').value) || null,
+        accountType: $('accountType').value
       };
       try {
         await db.ref('users/' + currentUser.uid).update(updates);
@@ -383,10 +464,6 @@
         saveBtn.classList.remove('saving');
         saveBtn.disabled = false;
       }
-    });
-    // Attach updateProgress to all inputs
-    ['firstName', 'surname', 'gender', 'birthYear', 'phone', 'nationality', 'country', 'residence', 'bio'].forEach(id => {
-      $(id)?.addEventListener('input', updateProgress);
     });
   </script>
 </body>
