@@ -26,6 +26,8 @@
     .message img{max-width:100%;border-radius:var(--radius);margin-top:.5rem;object-fit:contain;cursor:pointer}
     .message .read-status{font-size:.6rem;color:var(--light);align-self:flex-end;opacity:.7}
     .message .caption{font-size:.85rem;margin-top:.25rem;color:inherit;opacity:0.9}
+    .reply-preview{background:rgba(255,255,255,0.5);padding:0.5rem;border-radius:var(--radius);margin-bottom:0.5rem;color:var(--light);font-size:0.85rem;opacity:0.7;border-left:4px solid var(--light)}
+    .threaded-replies{margin-left:1rem;border-left:2px solid var(--border);padding-left:1rem}
     .message-input{display:flex;gap:.5rem;padding:0.5rem;background:var(--card);border-top:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);position:fixed;bottom:60px;left:0;right:0}
     .message-input input{flex:1;padding:0.5rem 1rem;border:1px solid var(--border);border-radius:12px;background:#fafafa;outline:none;font-size:0.9rem}
     .message-input input:focus{border-color:var(--accent)}
@@ -107,6 +109,7 @@
     let unsentMessages = JSON.parse(localStorage.getItem('unsentMessages') || '[]');
     let pendingImageUrl = null;
     let lastDate = null;
+    let replyingTo = null;
     auth.onAuthStateChanged(async user => {
       if (!user) {
         setTimeout(() => location.href = 'index.html', 1000);
@@ -194,6 +197,19 @@
       div.onclick = () => replyToMessage(msgId, msg.text.substring(0, 30));
       const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
       let content = '';
+      if (msg.replyTo) {
+        // Fetch original message for reply preview
+        const chatId = [currentUser.uid, currentChatUid].sort().join('_');
+        db.ref(`chats/${chatId}/messages/${msg.replyTo}`).once('value').then(originalSnap => {
+          const originalMsg = originalSnap.val();
+          if (originalMsg) {
+            const preview = document.createElement('div');
+            preview.className = 'reply-preview';
+            preview.innerHTML = `<div>${originalMsg.senderUid === currentUser.uid ? 'You' : 'Them'}: ${originalMsg.text.substring(0, 50)}...</div>`;
+            div.insertBefore(preview, div.firstChild);
+          }
+        });
+      }
       if (msg.type === 'image') {
         content = `<img src="${msg.text}" alt="Image" onclick="window.open(this.src, '_blank')">`;
         if (msg.caption) content += `<div class="caption">${msg.caption}</div>`;
