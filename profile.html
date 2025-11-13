@@ -13,20 +13,23 @@
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
     .header{background:var(--card);padding:1rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.05);position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
-    .logo{width:40px;height:40px;border-radius:50%;object-fit:cover}
-    .title{position:absolute;left:50%;transform:translateX(-50%);font-size:1.1rem;font-weight:600}
+    .logo{width:60px;height:60px;border-radius:50%;object-fit:cover}
+    .title{position:absolute;left:50%;transform:translateX(-50%);font-size:1.2rem;font-weight:600}
     .user-profile{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem}
-    .user-profile img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
-    main{margin-top:70px;padding:1.5rem;padding-bottom:80px}
+    .user-profile img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
+    main{margin-top:90px;padding:1.5rem;padding-bottom:80px}
     .profile-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:2rem}
-    .profile-pic{position:relative;width:100px;height:100px;border-radius:50%;overflow:hidden;box-shadow:var(--shadow);transition:.3s;flex-shrink:0}
+    .profile-pic{position:relative;width:120px;height:120px;border-radius:50%;overflow:hidden;box-shadow:var(--shadow);transition:.3s;flex-shrink:0}
     .profile-pic:hover{transform:scale(1.05)}
     .profile-pic img{width:100%;height:100%;object-fit:cover}
     .profile-info{display:flex;flex-direction:column;justify-content:center}
     .name{font-size:1.4rem;font-weight:700;margin-bottom:.25rem}
     .birthday{font-size:1rem;color:var(--light);margin-bottom:.5rem}
-    .change-photo-btn{background:var(--accent);color:#fff;padding:.5rem 1rem;border:none;border-radius:var(--radius);font-weight:500;cursor:pointer;transition:.2s;display:inline-block;margin-bottom:1rem}
+    .change-photo-btn{background:var(--accent);color:#fff;padding:.5rem 1rem;border:none;border-radius:var(--radius);font-weight:500;cursor:pointer;transition:.2s;display:inline-block;margin-bottom:.5rem}
     .change-photo-btn:hover{background:#c81c56;transform:translateY(-1px)}
+    .other-options{display:flex;gap:1rem}
+    .other-options a{display:inline-block;background:var(--card);padding:.5rem 1.5rem;border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem;transition:.2s}
+    .other-options a:hover{background:#f9fafb;transform:translateY(-1px)}
     .divider{border-top:1px solid var(--border);margin:1.5rem 0}
     .section{margin-bottom:1.5rem}
     .label{font-size:.8rem;color:var(--light);margin-bottom:.5rem;display:block;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
@@ -54,16 +57,15 @@
     .hidden{display:none}
     .progress-bar{margin:1rem 0;background:var(--border);height:4px;border-radius:2px;overflow:hidden}
     .progress-fill{background:var(--blue);height:100%;transition:.3s;border-radius:2px}
-    .other-options{margin-top:2rem;display:grid;grid-template-columns:repeat(2, 1fr);gap:1rem}
-    .other-options a{display:block;background:var(--card);padding:.75rem 1rem;border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem;text-align:center;transition:.2s}
-    .other-options a:hover{background:#f9fafb;transform:translateY(-1px)}
     @media (max-width: 768px) {
       .header{padding:1rem;gap:.5rem}
       main{padding:1rem}
       .row{flex-direction:column;gap:.5rem}
-      .profile-pic{width:80px;height:80px}
+      .profile-pic{width:100px;height:100px}
       .name{font-size:1.2rem}
-      .other-options{grid-template-columns:1fr}
+      .other-options{flex-direction:column;gap:.5rem}
+      .logo{width:50px;height:50px}
+      .user-profile img{width:40px;height:40px}
     }
   </style>
 </head>
@@ -84,6 +86,10 @@
         <div class="name" id="nameDisplay">Loading...</div>
         <div class="birthday" id="birthdayDisplay">Birthday: ? (? years old)</div>
         <label class="change-photo-btn" for="photoInput">Change Profile Photo</label>
+        <div class="other-options">
+          <a href="interest.html">My Interests</a>
+          <a href="post.html">My Posts</a>
+        </div>
         <input type="file" id="photoInput" accept="image/*" class="hidden">
       </div>
     </div>
@@ -171,10 +177,6 @@
       </select>
     </div>
     <button class="btn hidden" id="saveBtn">Save Changes</button>
-    <div class="other-options">
-      <a href="interest.html">My Interests</a>
-      <a href="post.html">My Posts</a>
-    </div>
     <div id="toast" class="toast hidden"></div>
   </main>
   <nav class="nav">
@@ -220,7 +222,7 @@
     let currentUser = null;
     let profileData = {};
     let initialData = {};
-    
+
     function showToast(message, isError = false) {
       toast.textContent = message;
       toast.classList.remove('hidden', 'show', 'error');
@@ -228,7 +230,7 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
-    
+
     function calculateAge(birthDateStr) {
       if (!birthDateStr) return '?';
       const birthDate = new Date(birthDateStr);
@@ -240,7 +242,7 @@
       }
       return age;
     }
-    
+
     function updateProgress() {
       const fields = ['firstName', 'surname', 'gender', 'birthDate', 'profession', 'bio', 'nationality', 'reason', 'height', 'accountType'];
       let completed = 0;
@@ -254,7 +256,7 @@
         showToast(`Your profile is ${Math.round(percentage)}% complete. Fill in all details for better matches!`);
       }
     }
-    
+
     function checkForChanges() {
       const fields = ['firstName', 'middleName', 'surname', 'gender', 'birthDate', 'phone', 'nationality', 'country', 'residence', 'bio', 'profession', 'customProfession', 'reason', 'height', 'accountType'];
       let hasChanges = false;
@@ -271,7 +273,7 @@
       if (photoInput.files.length > 0) hasChanges = true;
       saveBtn.classList.toggle('hidden', !hasChanges);
     }
-    
+
     // Auto-fill birth year from date of birth
     $('birthDate').addEventListener('change', () => {
       const birthDate = $('birthDate').value;
@@ -284,14 +286,14 @@
       checkForChanges();
       updateProgress();
     });
-    
+
     // Profession dropdown logic
     profession.addEventListener('change', () => {
       customProfession.style.display = profession.value === 'Other' ? 'block' : 'none';
       checkForChanges();
       updateProgress();
     });
-    
+
     // Capitalize first letter for names
     ['firstName', 'middleName', 'surname'].forEach(id => {
       $(id)?.addEventListener('blur', () => {
@@ -302,7 +304,7 @@
         checkForChanges();
       });
     });
-    
+
     // Account type logic
     $('accountType').addEventListener('change', () => {
       if ($('accountType').value === 'premium') {
@@ -312,7 +314,7 @@
       checkForChanges();
       updateProgress();
     });
-    
+
     // Attach change listeners for all inputs
     ['firstName', 'middleName', 'surname', 'gender', 'phone', 'nationality', 'country', 'residence', 'bio', 'customProfession', 'reason', 'height'].forEach(id => {
       $(id)?.addEventListener('input', () => {
@@ -320,7 +322,7 @@
         updateProgress();
       });
     });
-    
+
     // AUTH STATE
     auth.onAuthStateChanged(async user => {
       if (!user) {
@@ -363,16 +365,16 @@
         // DISPLAY PHOTO
         const picUrl = profileData.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e91e63&color=fff&size=120`;
         photo.src = picUrl;
-        userPhoto.src = picUrl.replace('size=120', 'size=36');
+        userPhoto.src = picUrl.replace('size=120', 'size=48');
         updateProgress();
         showToast("Profile loaded. Edit and save changes.");
       } catch (err) {
         showToast("Error loading profile: " + err.message, true);
       }
     });
-    
+
     const predefinedProfessions = ['Software Developer', 'Doctor', 'Teacher', 'Engineer', 'Artist', 'Entrepreneur'];
-    
+
     // PHOTO UPLOAD
     photoInput.addEventListener('change', async () => {
       if (!currentUser || !photoInput.files[0]) return;
@@ -393,7 +395,7 @@
             const imageUrl = result.data.url;
             await db.ref('users/' + currentUser.uid + '/profilePic').set(imageUrl);
             photo.src = imageUrl;
-            userPhoto.src = imageUrl.replace('size=120', 'size=36');
+            userPhoto.src = imageUrl.replace('size=120', 'size=48');
             showToast("Photo updated!");
             checkForChanges();
           } else {
@@ -407,7 +409,7 @@
         photoInput.value = '';
       }
     });
-    
+
     // SAVE PROFILE
     saveBtn.addEventListener('click', async () => {
       if (!currentUser) {
