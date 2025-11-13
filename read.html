@@ -23,7 +23,7 @@
     .message.sent{align-self:flex-end;background:var(--accent);color:#fff}
     .message.received{align-self:flex-start;background:#f0f0f0;color:var(--text)}
     .message .time{font-size:.7rem;color:var(--light);opacity:.7}
-    .message img{max-width:100%;border-radius:var(--radius);margin-top:.5rem;object-fit:contain}
+    .message img{max-width:100%;border-radius:var(--radius);margin-top:.5rem;object-fit:contain;cursor:pointer}
     .message .read-status{font-size:.6rem;color:var(--light);align-self:flex-end;opacity:.7}
     .message .caption{font-size:.85rem;margin-top:.25rem;color:inherit;opacity:0.9}
     .message-input{display:flex;gap:.5rem;padding:0.5rem;background:var(--card);border-top:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);position:fixed;bottom:60px;left:0;right:0}
@@ -194,7 +194,7 @@
       const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
       let content = '';
       if (msg.type === 'image') {
-        content = `<img src="${msg.text}" alt="Image">`;
+        content = `<img src="${msg.text}" alt="Image" onclick="window.open(this.src, '_blank')">`;
         if (msg.caption) content += `<div class="caption">${msg.caption}</div>`;
       } else {
         content = `<div>${msg.text}</div>`;
@@ -211,9 +211,9 @@
     function getReadStatus(msg) {
       const keys = Object.keys(msg.readBy || {});
       if (keys.length > 1) {
-        return '<span style="color: #34b7f1">✓✓</span>'; // read
+        return '<span style="color: white">✓✓</span>'; // white double tick for read
       } else {
-        return '✓✓'; // delivered
+        return '<span style="color: #ccc">✓✓</span>'; // light gray for delivered
       }
     }
     function formatDate(timestamp) {
