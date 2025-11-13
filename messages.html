@@ -30,34 +30,11 @@
     .user-details{font-size:.85rem;color:var(--light)}
     .last-message{font-size:.8rem;color:var(--light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .unread-indicator{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:auto}
-    .chat-container{display:none}
-    .chat-header{background:var(--card);padding:1rem;border-radius:var(--radius) var(--radius) 0 0;box-shadow:var(--shadow);display:flex;align-items:center;gap:1rem}
-    .chat-back{cursor:pointer;font-size:1.2rem}
-    .chat-user{display:flex;align-items:center;gap:.5rem}
-    .chat-user img{width:40px;height:40px;border-radius:50%;object-fit:cover}
-    .chat-user-info .name{font-weight:600}
-    .chat-user-info .status{font-size:.8rem;color:var(--light)}
-    .messages{flex:1;background:var(--card);border-radius:0 0 var(--radius) var(--radius);padding:1rem;height:calc(100vh - 200px);overflow-y:auto;display:flex;flex-direction:column;gap:.5rem}
-    .message{display:flex;flex-direction:column;gap:.25rem;max-width:80%;padding:.75rem;border-radius:var(--radius);box-shadow:var(--shadow);position:relative}
-    .message.sent{align-self:flex-end;background:var(--accent);color:#fff}
-    .message.received{align-self:flex-start;background:#f0f0f0;color:var(--text)}
-    .message .time{font-size:.7rem;color:var(--light);opacity:.7}
-    .message img{max-width:100%;border-radius:var(--radius);margin-top:.5rem;object-fit:contain}
-    .message .read-status{font-size:.6rem;color:var(--light);align-self:flex-end;opacity:.7}
-    .message .caption{font-size:.85rem;margin-top:.25rem;color:inherit;opacity:0.9}
-    .message-input{display:flex;gap:.5rem;padding:0.5rem;background:var(--card);border-top:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);position:fixed;bottom:60px;left:0;right:0}
-    .message-input input{flex:1;padding:0.5rem 1rem;border:1px solid var(--border);border-radius:12px;background:#fafafa;outline:none;font-size:0.9rem}
-    .message-input input:focus{border-color:var(--accent)}
-    .send-btn{background:var(--accent);color:#fff;border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s}
-    .send-btn:hover{background:#c81c56}
-    .upload-btn{background:var(--blue);color:#fff;border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s}
-    .upload-btn:hover{background:#2563eb}
     .no-chat{text-align:center;padding:2rem;color:var(--light)}
     .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:.75rem 0;box-shadow:0 -2px 10px rgba(0,0,0,.05);z-index:100}
     .nav a{display:flex;flex-direction:column;align-items:center;color:var(--light);text-decoration:none;font-size:.7rem}
     .nav a.active{color:var(--accent)}
     .nav svg{width:24px;height:24px;margin-bottom:.25rem}
-    .hidden{display:none}
     @media (max-width: 768px) {
       .header{padding:1rem;gap:.5rem}
       .search{flex:none;width:120px;padding:.5rem .75rem;font-size:.8rem}
@@ -65,10 +42,6 @@
       .logo{width:32px;height:32px}
       main{padding:0}
       .users-list{height:calc(100vh - 140px);padding:0.5rem}
-      .messages{height:calc(100vh - 180px);padding:0.5rem}
-      .message-input{padding:0.5rem;gap:0.4rem}
-      .send-btn{width:36px;height:36px}
-      .upload-btn{width:36px;height:36px}
       .nav{padding:0.5rem 0}
     }
   </style>
@@ -85,25 +58,6 @@
     <section class="section" id="usersSection">
       <h2>Messages</h2>
       <div class="users-list" id="usersList"></div>
-    </section>
-    <section class="section chat-container" id="chatSection">
-      <div class="chat-header">
-        <span class="chat-back" onclick="toggleChat()">← Back</span>
-        <div class="chat-user">
-          <img id="chatUserPhoto" src="" alt="">
-          <div class="chat-user-info">
-            <div class="name" id="chatUserName"></div>
-            <div class="status" id="chatUserStatus">Online</div>
-          </div>
-        </div>
-      </div>
-      <div class="messages" id="messages"></div>
-      <div class="message-input">
-        <label class="upload-btn" for="imageInput">📸</label>
-        <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload()">
-        <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-        <button class="send-btn" onclick="sendMessage()">→</button>
-      </div>
     </section>
     <div class="no-chat" id="noChat">Select a user to start chatting</div>
   </main>
@@ -122,7 +76,6 @@
     </a>
   </nav>
   <script>
-    const IMGBB_API_KEY = "6ddfbebb374608e72e89ad33ed0cb0d2";
     const config = {
       apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
       authDomain: "amora-bytales.firebaseapp.com",
@@ -137,21 +90,11 @@
     const db = firebase.database();
     const $ = id => document.getElementById(id);
     const usersList = $('usersList');
-    const chatSection = $('chatSection');
-    const usersSection = $('usersSection');
     const noChat = $('noChat');
     const searchInput = $('search');
     const userPhoto = $('userPhoto');
-    const messageInput = $('messageInput');
-    const messages = $('messages');
-    const imageInput = $('imageInput');
     let allUsers = [];
     let currentUser = null;
-    let currentChatUid = null;
-    let messagesRef = null;
-    let messagesListener = null;
-    let unsentMessages = JSON.parse(localStorage.getItem('unsentMessages') || '[]');
-    let pendingImageUrl = null;
     auth.onAuthStateChanged(async user => {
       if (!user) {
         setTimeout(() => location.href = 'index.html', 1000);
@@ -176,7 +119,6 @@
           });
           loadAndSortUsers(filtered);
         });
-        sendUnsentMessages();
       } catch (err) {
         console.error(err);
       }
@@ -216,150 +158,7 @@
       }).join('');
     }
     function openChat(otherUid) {
-      currentChatUid = otherUid;
-      const otherUser = allUsers.find(u => u.uid === otherUid);
-      if (!otherUser) return;
-      const name = otherUser.firstName || otherUser.middleName || 'User';
-      const surname = otherUser.surname ? ` ${otherUser.surname}` : '';
-      $('chatUserName').textContent = `${name}${surname}`;
-      $('chatUserPhoto').src = otherUser.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=40`;
-      usersSection.style.display = 'none';
-      noChat.style.display = 'none';
-      chatSection.style.display = 'block';
-      messages.innerHTML = '';
-      messageInput.value = '';
-      // Cleanup previous listener
-      if (messagesRef && messagesListener) {
-        messagesRef.off('child_added', messagesListener);
-      }
-      const chatId = [currentUser.uid, otherUid].sort().join('_');
-      messagesRef = db.ref(`chats/${chatId}/messages`);
-      messagesListener = snap => {
-        const msg = snap.val();
-        if (msg) {
-          renderMessage(msg, msg.senderUid === currentUser.uid, snap.key);
-          if (msg.senderUid !== currentUser.uid && !msg.readBy?.[currentUser.uid]) {
-            markAsRead(snap.key);
-          }
-        }
-      };
-      messagesRef.on('child_added', messagesListener);
-      messagesRef.once('value').then(snap => {
-        messages.innerHTML = '';
-        snap.forEach(child => {
-          const msg = child.val();
-          if (msg) {
-            renderMessage(msg, msg.senderUid === currentUser.uid, child.key);
-            if (msg.senderUid !== currentUser.uid && !msg.readBy?.[currentUser.uid]) {
-              markAsRead(child.key);
-            }
-          }
-        });
-        messages.scrollTop = messages.scrollHeight;
-      }).catch(err => {
-        console.error('Error loading messages:', err);
-      });
-      chatSection.scrollIntoView({ behavior: 'smooth' });
-    }
-    function markAsRead(msgId) {
-      const chatId = [currentUser.uid, currentChatUid].sort().join('_');
-      db.ref(`chats/${chatId}/messages/${msgId}/readBy/${currentUser.uid}`).set(true).catch(err => console.error('Error marking as read:', err));
-    }
-    function toggleChat() {
-      chatSection.style.display = 'none';
-      usersSection.style.display = 'block';
-      noChat.style.display = 'block';
-      if (messagesRef && messagesListener) {
-        messagesRef.off('child_added', messagesListener);
-        messagesListener = null;
-        messagesRef = null;
-      }
-      currentChatUid = null;
-    }
-    function renderMessage(msg, isSent, msgId) {
-      const div = document.createElement('div');
-      div.className = `message ${isSent ? 'sent' : 'received'}`;
-      const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      let content = '';
-      if (msg.type === 'image') {
-        content = `<img src="${msg.text}" alt="Image">`;
-        if (msg.caption) content += `<div class="caption">${msg.caption}</div>`;
-      } else {
-        content = `<div>${msg.text}</div>`;
-      }
-      const readStatus = isSent ? (Object.keys(msg.readBy || {}).length > 1 ? 'Read' : 'Delivered') : '';
-      div.innerHTML = `
-        ${content}
-        <div class="time">${time}</div>
-        <div class="read-status">${readStatus}</div>
-      `;
-      messages.appendChild(div);
-      messages.scrollTop = messages.scrollHeight;
-    }
-    async function handleImageUpload() {
-      const file = imageInput.files[0];
-      if (!file) return;
-      try {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-          const base64 = reader.result.split(',')[1];
-          const formData = new FormData();
-          formData.append('key', IMGBB_API_KEY);
-          formData.append('image', base64);
-          const response = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
-          const result = await response.json();
-          if (result.success) {
-            pendingImageUrl = result.data.url;
-            messageInput.placeholder = 'Type caption for image (optional)...';
-            messageInput.focus();
-          } else {
-            console.error('Upload failed:', result.error.message);
-          }
-        };
-      } catch (err) {
-        console.error('Upload error:', err);
-      } finally {
-        imageInput.value = '';
-      }
-    }
-    function sendMessage() {
-      const text = messageInput.value.trim();
-      const type = pendingImageUrl ? 'image' : 'text';
-      const content = pendingImageUrl ? pendingImageUrl : text;
-      const caption = pendingImageUrl && text ? text : '';
-      if (!content || !currentChatUid) return;
-      const chatId = [currentUser.uid, currentChatUid].sort().join('_');
-      const msg = {
-        text: content,
-        type,
-        senderUid: currentUser.uid,
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        readBy: {[currentUser.uid]: true}
-      };
-      if (caption) msg.caption = caption;
-      db.ref(`chats/${chatId}/messages`).push(msg).then(() => {
-        messageInput.value = '';
-        messageInput.placeholder = 'Type a message...';
-        pendingImageUrl = null;
-      }).catch(err => {
-        console.error('Error sending message:', err);
-        unsentMessages.push({ chatId, msg });
-        localStorage.setItem('unsentMessages', JSON.stringify(unsentMessages));
-      });
-    }
-    function sendUnsentMessages() {
-      unsentMessages.forEach(({ chatId, msg }) => {
-        db.ref(`chats/${chatId}/messages`).push(msg).then(() => {
-          unsentMessages = unsentMessages.filter(m => m.chatId !== chatId && m.msg.timestamp !== msg.timestamp);
-          localStorage.setItem('unsentMessages', JSON.stringify(unsentMessages));
-        }).catch(() => {});
-      });
-    }
-    function handleKeyPress(event) {
-      if (event.key === 'Enter') {
-        sendMessage();
-      }
+      location.href = 'read.html?uid=' + otherUid;
     }
     // Initial view
     noChat.style.display = 'block';
