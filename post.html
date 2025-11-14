@@ -44,9 +44,6 @@
     .nav svg{width:24px;height:24px;margin-bottom:.25rem}
     .hidden{display:none}
     .divider{border-top:1px solid var(--border);margin:1.5rem 0}
-    .other-options{display:flex;gap:1rem;margin-bottom:1rem}
-    .other-options a{display:inline-block;background:var(--card);padding:.5rem 1.5rem;border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem;transition:.2s}
-    .other-options a:hover{background:#f9fafb;transform:translateY(-1px)}
     .posts-grid{display:grid;grid-template-columns:1fr;gap:1rem}
     .post-card{background:var(--card);padding:1rem;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow)}
     .post-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem}
@@ -56,10 +53,10 @@
     .post-title{font-size:1.1rem;font-weight:600;margin-bottom:.5rem;text-transform:uppercase}
     .post-content{font-size:.95rem;margin-bottom:.75rem}
     .post-image{max-width:100%;border-radius:12px;margin-top:.5rem;display:block}
+    .post-likes{font-size:.9rem;color:var(--light);margin-top:.5rem}
     @media (max-width: 768px) {
       .header{padding:1rem;gap:.5rem}
       main{padding:1rem;padding-bottom:100px}
-      .other-options{flex-direction:column;gap:.5rem}
       .logo{width:50px;height:50px}
       .user-profile img{width:40px;height:40px}
     }
@@ -74,11 +71,6 @@
     </a>
   </header>
   <main>
-    <div class="other-options">
-      <a href="profile.html">My Profile</a>
-      <a href="interest.html">My Interests</a>
-    </div>
-    <div class="divider"></div>
     <div class="section post-section">
       <div class="label required">Post Title</div>
       <input type="text" class="input" id="postTitle" placeholder="Enter title (will be converted to uppercase)" required maxlength="50">
@@ -134,7 +126,6 @@
     let currentUser = null;
     let profileData = {};
     const MAX_POSTS = 10; // Max posts per user
-
     function showToast(message, isError = false) {
       toast.textContent = message;
       toast.classList.remove('hidden', 'show', 'error');
@@ -142,19 +133,18 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
-
     function checkForChanges() {
       const hasContent = postTitle.value.trim() || postDescription.value.trim() || postImage.files.length > 0;
       saveBtn.classList.toggle('hidden', !hasContent);
     }
-
     function formatDate(timestamp) {
       const date = new Date(timestamp);
       return date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
     }
-
     function renderPosts(posts) {
-      postsGrid.innerHTML = posts.length ? posts.map(post => `
+      postsGrid.innerHTML = posts.length ? posts.map(post => {
+        const likeCount = Object.keys(post.likes || {}).length;
+        return `
         <div class="post-card">
           <div class="post-header">
             <img src="${profileData.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.fullName || currentUser.email.split('@')[0])}&background=e91e63&color=fff&size=40`}" alt="User" class="post-user-pic">
@@ -166,10 +156,11 @@
           <div class="post-title">${post.title}</div>
           <div class="post-content">${post.description}</div>
           ${post.image ? `<img src="${post.image}" alt="Post Image" class="post-image">` : ''}
+          <div class="post-likes"><strong>Likes:</strong> ${likeCount}</div>
         </div>
-      `).join('') : '<p style="font-size:.9rem;color:var(--light);text-align:center;">No posts yet. Share something!</p>';
+      `;
+      }).join('') : '<p style="font-size:.9rem;color:var(--light);text-align:center;">No posts yet. Share something!</p>';
     }
-
     // Input listeners
     postTitle.addEventListener('input', () => {
       postTitle.value = postTitle.value.toUpperCase(); // Force uppercase
@@ -177,7 +168,6 @@
     });
     postDescription.addEventListener('input', checkForChanges);
     postImage.addEventListener('change', checkForChanges);
-
     // AUTH STATE
     auth.onAuthStateChanged(async user => {
       if (!user) {
@@ -193,7 +183,6 @@
         profileData.fullName = [profileData.firstName, profileData.middleName, profileData.surname].filter(Boolean).join(' ') || user.email.split('@')[0];
         const picUrl = profileData.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.fullName)}&background=e91e63&color=fff&size=48`;
         userPhoto.src = picUrl;
-
         // Load posts and check limit
         db.ref('posts/' + user.uid).on('value', snap => {
           const postsData = snap.val() || {};
@@ -207,13 +196,11 @@
             saveBtn.disabled = false;
           }
         });
-
         showToast("Posts loaded. Share something new!");
       } catch (err) {
         showToast("Error loading data: " + err.message, true);
       }
     });
-
     // SAVE POST
     saveBtn.addEventListener('click', async () => {
       if (!currentUser) {
