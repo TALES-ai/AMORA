@@ -125,7 +125,7 @@
     const postsGrid = $('postsGrid');
     let currentUser = null;
     let profileData = {};
-    const MAX_POSTS = 10; // Max posts per user
+    let maxPosts = 3;
     function showToast(message, isError = false) {
       toast.textContent = message;
       toast.classList.remove('hidden', 'show', 'error');
@@ -183,15 +183,16 @@
         profileData.fullName = [profileData.firstName, profileData.middleName, profileData.surname].filter(Boolean).join(' ') || user.email.split('@')[0];
         const picUrl = profileData.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.fullName)}&background=e91e63&color=fff&size=48`;
         userPhoto.src = picUrl;
+        maxPosts = profileData.accountType === 'premium' ? 10 : 3;
         // Load posts and check limit
         db.ref('posts/' + user.uid).on('value', snap => {
           const postsData = snap.val() || {};
           const posts = Object.entries(postsData).map(([id, post]) => ({ id, ...post })).sort((a, b) => b.timestamp - a.timestamp);
           renderPosts(posts);
-          if (posts.length >= MAX_POSTS) {
+          if (posts.length >= maxPosts) {
             saveBtn.disabled = true;
             saveBtn.classList.add('hidden');
-            showToast("Maximum of 10 posts reached. Delete older posts to add new ones.", true);
+            showToast(`Maximum of ${maxPosts} posts reached. Upgrade to premium for more.`, true);
           } else {
             saveBtn.disabled = false;
           }
@@ -225,8 +226,8 @@
       try {
         const snap = await db.ref('posts/' + currentUser.uid).once('value');
         const postCount = snap.numChildren();
-        if (postCount >= MAX_POSTS) {
-          showToast("Maximum of 10 posts reached. Delete older posts to add new ones.", true);
+        if (postCount >= maxPosts) {
+          showToast(`Maximum of ${maxPosts} posts reached. Upgrade to premium for more.`, true);
           return;
         }
         saveBtn.textContent = '';
