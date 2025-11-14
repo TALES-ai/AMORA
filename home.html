@@ -53,7 +53,8 @@
     .action-btn.follow{background:var(--green);color:#fff;padding:.25rem .75rem;border-radius:10px}
     .action-btn.follow.following{background:#ccc;color:#fff}
     .action-btn.message svg{width:24px;height:24px;fill:var(--accent)}
-    .visit-profile{position:absolute;top:1rem;right:1rem;font-size:.8rem;color:#fff;background:var(--accent);padding:.25rem .75rem;border-radius:10px;text-decoration:none;font-weight:500}
+    .visit-profile{position:absolute;top:1rem;right:1rem;background:var(--accent);padding:.5rem;border-radius:50%;text-decoration:none;display:flex;align-items:center;justify-content:center;width:32px;height:32px}
+    .visit-profile svg{width:20px;height:20px;fill:#fff}
     .add-post{position:fixed;bottom:80px;right:1rem;width:48px;height:48px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;box-shadow:0 2px 10px rgba(0,0,0,.2);z-index:99}
     .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:.75rem 0;box-shadow:0 -2px 10px rgba(0,0,0,.05);z-index:100}
     .nav a{display:flex;flex-direction:column;align-items:center;color:var(--light);text-decoration:none;font-size:.7rem}
@@ -86,11 +87,11 @@
   <main>
     <div class="status">New Profiles in AMORA</div>
     <section class="section">
-      <h2>Stories</h2>
+      <h2>MOST RANKED PROFILES</h2>
       <div class="stories" id="stories"></div>
     </section>
     <section class="section">
-      <h2>You may like</h2>
+      <h2>AMORA SUGGESTED PROFILES</h2>
       <div class="slider" id="recs"></div>
     </section>
     <section class="section">
@@ -295,7 +296,11 @@
                 </a>
                 <a href="#" class="action-btn follow${isFollowing ? ' following' : ''}" onclick="toggleFollow('${post.uid}', this)">${isFollowing ? 'Following' : 'Follow'}</a>
               </div>
-              <a href="view.html?uid=${post.uid}" class="visit-profile">Visit Profile</a>
+              <a href="view.html?uid=${post.uid}" class="visit-profile">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a4 4 0 100 8 4 4 0 000-8zM2 18a8 8 0 0116 0v-1a3 3 0 00-3-3H5a3 3 0 00-3 3v1z"/>
+                </svg>
+              </a>
             </div>
           `;
         });
