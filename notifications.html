@@ -28,6 +28,7 @@
     .notification-card.profile{background:linear-gradient(135deg,rgba(233,30,99,.15),rgba(255,255,255,.9))}
     .notification-card.premium{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(255,255,255,.9))}
     .notification-card.post{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(255,255,255,.9))}
+    .notification-card.follower{background:linear-gradient(135deg,rgba(233,30,99,.15),rgba(255,255,255,.9))}
     .notification-icon{width:40px;height:40px;border-radius:50%;background:rgba(233,30,99,.2);display:flex;align-items:center;justify-content:center}
     .notification-icon svg{width:24px;height:24px;fill:var(--accent)}
     .notification-content{flex:1}
@@ -77,9 +78,9 @@
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M18 12.5v-6a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2z"/></svg>
       <span>Messages</span>
     </a>
-    <a href="profile.html" class="active">
-      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a4 4 0 100 8 4 4 0 000-8zM2 18a8 8 0 0116 0v-1a3 3 0 00-3-3H5a3 3 0 00-3 3v1z"/></svg>
-      <span>Profile</span>
+    <a href="notifications.html" class="active">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+      <span>Alerts</span>
     </a>
   </nav>
   <script>
@@ -210,15 +211,13 @@
             const chatSnap = await db.ref(`chats/${chatId}`).once('value');
             const chat = chatSnap.val();
             if (!chat || !chat.messages) continue;
-            console.log(`Processing chat: ${chatId}`, chat); // Debug
             const messages = Object.entries(chat.messages).map(([id, msg]) => ({ id, ...msg }));
             const lastMessage = messages.sort((a, b) => b.timestamp - a.timestamp)[0];
             if (!lastMessage || lastMessage.senderUid === currentUser.uid) continue;
-            console.log('Last message:', lastMessage); // Debug
             const hasReplies = messages.some(msg => msg.replyTo && msg.senderUid === currentUser.uid && msg.replyTo === lastMessage.id);
             const timeDiff = now - lastMessage.timestamp;
             const isRead = lastMessage.readBy && lastMessage.readBy[currentUser.uid];
-            if (!hasReplies && !isRead && timeDiff >= 300000) { // 5 minutes = 300000 ms
+            if (!hasReplies && !isRead && timeDiff >= 300000) { // 5 minutes
               const senderUid = lastMessage.senderUid;
               const sender = usersData[senderUid] || {};
               const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
@@ -231,7 +230,7 @@
               });
             }
           } catch (err) {
-            console.log(`Error accessing chat ${chatId}:`, err); // Debug
+            console.log(`Error accessing chat ${chatId}:`, err);
           }
         }
 
@@ -277,16 +276,33 @@
           const userPostsSnap = await db.ref(`posts/${uid}`).once('value');
           const userPosts = userPostsSnap.val() || {};
           for (const [postId, post] of Object.entries(userPosts)) {
-            if (post.timestamp > now - 86400000) { // Within 24 hours
+            if (post.timestamp > now - 86400000) {
               const name = [user.firstName, user.surname].filter(Boolean).join(' ') || 'Someone';
               notifications.push({
                 type: 'post',
                 message: `${name} posted on ${formatDate(post.timestamp)}`,
-                action: `<a href="profile.html?uid=${uid}" class="notification-action">View Profile</a>`,
+                action: `<a href="view.html?uid=${uid}" class="notification-action">View Profile</a>`,
                 timestamp: post.timestamp,
                 icon: `<svg viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4l-2-2V5zm2 2v6h10V7H4z"/></svg>`
               });
             }
+          }
+        }
+
+        // 8. New Followers (within 24 hours)
+        const followersSnap = await db.ref(`followers/${currentUser.uid}`).once('value');
+        const followers = followersSnap.val() || {};
+        for (const [followerUid, follower] of Object.entries(followers)) {
+          if (follower.timestamp > now - 86400000) {
+            const sender = usersData[followerUid] || {};
+            const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
+            notifications.push({
+              type: 'follower',
+              message: `${name} started following you`,
+              action: `<a href="view.html?uid=${followerUid}" class="notification-action">View Profile</a>`,
+              timestamp: follower.timestamp,
+              icon: `<svg viewBox="0 0 20 20"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm-2 6H2v-1c0-2.2 4.48-4 8-4s8 1.8 8 4v1h-8v-2z"/></svg>`
+            });
           }
         }
 
@@ -304,11 +320,10 @@
         `).join('') : '<p class="no-notifications">No notifications yet.</p>';
       } catch (err) {
         showToast("Error loading notifications: " + err.message, true);
-        console.error('Notification error:', err); // Debug
+        console.error('Notification error:', err);
       }
     }
 
-    // AUTH STATE
     auth.onAuthStateChanged(async user => {
       if (!user) {
         showToast("Not logged in. Redirecting...", true);
@@ -317,24 +332,18 @@
       }
       currentUser = user;
       try {
-        // Load user profile
         const userSnap = await db.ref('users/' + user.uid).once('value');
         profileData = userSnap.val() || {};
         const fullName = [profileData.firstName, profileData.middleName, profileData.surname].filter(Boolean).join(' ') || user.email.split('@')[0];
         const picUrl = profileData.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e91e63&color=fff&size=48`;
         userPhoto.src = picUrl;
-
-        // Load all users for birthdays and names
         const usersSnap = await db.ref('users').once('value');
         usersData = usersSnap.val() || {};
-        console.log('Users data:', usersData); // Debug
-
-        // Generate notifications
         await generateNotifications();
         showToast("Notifications loaded.");
       } catch (err) {
         showToast("Error loading data: " + err.message, true);
-        console.error('Auth error:', err); // Debug
+        console.error('Auth error:', err);
       }
     });
   </script>
