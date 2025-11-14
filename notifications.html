@@ -28,7 +28,6 @@
     .notification-card.profile{background:linear-gradient(135deg,rgba(233,30,99,.15),rgba(255,255,255,.9))}
     .notification-card.premium{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(255,255,255,.9))}
     .notification-card.post{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(255,255,255,.9))}
-    .notification-card.friend{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(255,255,255,.9))}
     .notification-icon{width:40px;height:40px;border-radius:50%;background:rgba(233,30,99,.2);display:flex;align-items:center;justify-content:center}
     .notification-icon svg{width:24px;height:24px;fill:var(--accent)}
     .notification-content{flex:1}
@@ -78,9 +77,9 @@
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M18 12.5v-6a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2z"/></svg>
       <span>Messages</span>
     </a>
-    <a href="notifications.html" class="active">
-      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
-      <span>Notifications</span>
+    <a href="profile.html" class="active">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a4 4 0 100 8 4 4 0 000-8zM2 18a8 8 0 0116 0v-1a3 3 0 00-3-3H5a3 3 0 00-3 3v1z"/></svg>
+      <span>Profile</span>
     </a>
   </nav>
   <script>
@@ -117,20 +116,27 @@
       return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
     }
 
-    function isTodayBirthday(dateOfBirth) {
-      const today = new Date('2025-11-14'); // For testing, set to Nov 14, 2025
-      const dob = new Date(dateOfBirth);
+    function isTodayBirthday(birthDate) {
+      const today = new Date();
+      const dob = new Date(birthDate);
       return dob.getDate() === today.getDate() && dob.getMonth() === today.getMonth();
     }
 
-    function calculateAge(dateOfBirth) {
-      const today = new Date('2025-11-14'); // For testing, set to Nov 14, 2025
-      const dob = new Date(dateOfBirth);
+    function isTomorrowBirthday(birthDate) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const dob = new Date(birthDate);
+      return dob.getDate() === tomorrow.getDate() && dob.getMonth() === tomorrow.getMonth();
+    }
+
+    function calculateAge(birthDate) {
+      const today = new Date();
+      const dob = new Date(birthDate);
       return today.getFullYear() - dob.getFullYear();
     }
 
     function isMonday7AM() {
-      const now = new Date('2025-11-17T07:00:00'); // For testing, set to Monday, Nov 17, 2025, 7 AM
+      const now = new Date();
       return now.getDay() === 1 && now.getHours() === 7 && now.getMinutes() === 0;
     }
 
@@ -139,22 +145,22 @@
       const now = Date.now();
       try {
         // 1. Welcome Notification
-        if (profileData.joinDate) {
-          const joinDate = new Date(profileData.joinDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        if (profileData.createdAt) {
+          const joinDate = new Date(profileData.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
           notifications.push({
             type: 'welcome',
             message: `Today, ${joinDate}, you joined the vibrant AMORA community! Connect, share, and discover meaningful connections.`,
             action: '',
-            timestamp: profileData.joinDate,
+            timestamp: profileData.createdAt,
             icon: `<svg viewBox="0 0 20 20"><path d="M10 2a8 8 0 00-8 8c0 4.4 3.6 8 8 8s8-3.6 8-8a8 8 0 00-8-8zm0 14a6 6 0 01-6-6 6 6 0 0112 0 6 6 0 01-6 6z"/></svg>`
           });
         }
 
         // 2. Incomplete Profile
-        if (!profileData.firstName || !profileData.surname || !profileData.dateOfBirth) {
+        if (!profileData.firstName?.trim() || !profileData.surname?.trim()) {
           notifications.push({
             type: 'profile',
-            message: 'Your profile is incomplete. Add your name and birthday for better matches!',
+            message: 'Your profile is incomplete. Add your name and surname for better matches!',
             action: `<a href="profile.html" class="notification-action">Complete Profile</a>`,
             timestamp: now,
             icon: `<svg viewBox="0 0 20 20"><path d="M10 2a4 4 0 100 8 4 4 0 000-8zM2 18a8 8 0 0116 0v-1a3 3 0 00-3-3H5a3 3 0 00-3 3v1z"/></svg>`
@@ -172,22 +178,32 @@
           });
         }
 
-        // 4. Birthday Notifications
+        // 4. Birthday Notifications (Today and Tomorrow)
         Object.entries(usersData).forEach(([uid, user]) => {
-          if (uid !== currentUser.uid && user.dateOfBirth && isTodayBirthday(user.dateOfBirth)) {
+          if (uid !== currentUser.uid && user.birthDate) {
             const name = [user.firstName, user.surname].filter(Boolean).join(' ') || 'Someone';
-            const age = calculateAge(user.dateOfBirth);
-            notifications.push({
-              type: 'birthday',
-              message: `Today, ${name} is turning ${age}! Wish them a happy birthday.`,
-              action: `<a href="messages.html?uid=${uid}" class="notification-action">Message</a>`,
-              timestamp: now - 2000,
-              icon: `<svg viewBox="0 0 20 20"><path d="M10 2a2 2 0 00-2 2c0 1.1.9 2 2 2s2-.9 2-2a2 2 0 00-2-2zm5 5H5a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg>`
-            });
+            const age = calculateAge(user.birthDate);
+            if (isTodayBirthday(user.birthDate)) {
+              notifications.push({
+                type: 'birthday',
+                message: `Today, ${name} is turning ${age}! Wish them a happy birthday.`,
+                action: `<a href="messages.html?uid=${uid}" class="notification-action">Message</a>`,
+                timestamp: now - 2000,
+                icon: `<svg viewBox="0 0 20 20"><path d="M10 2a2 2 0 00-2 2c0 1.1.9 2 2 2s2-.9 2-2a2 2 0 00-2-2zm5 5H5a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg>`
+              });
+            } else if (isTomorrowBirthday(user.birthDate)) {
+              notifications.push({
+                type: 'birthday',
+                message: `Tomorrow, ${name} will be turning ${age}! Plan a special wish.`,
+                action: `<a href="messages.html?uid=${uid}" class="notification-action">Message</a>`,
+                timestamp: now - 2000,
+                icon: `<svg viewBox="0 0 20 20"><path d="M10 2a2 2 0 00-2 2c0 1.1.9 2 2 2s2-.9 2-2a2 2 0 00-2-2zm5 5H5a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg>`
+              });
+            }
           }
         });
 
-        // 5. Unread Messages (over 2 hours)
+        // 5. Unread Messages (over 5 minutes)
         const chatIds = Object.keys(usersData).map(uid => [ `${uid}_${currentUser.uid}`, `${currentUser.uid}_${uid}` ]).flat();
         for (const chatId of chatIds) {
           try {
@@ -199,9 +215,10 @@
             const lastMessage = messages.sort((a, b) => b.timestamp - a.timestamp)[0];
             if (!lastMessage || lastMessage.senderUid === currentUser.uid) continue;
             console.log('Last message:', lastMessage); // Debug
-            const hasReplies = messages.some(msg => msg.replies && Object.keys(msg.replies).length > 0 && msg.senderUid === lastMessage.senderUid);
+            const hasReplies = messages.some(msg => msg.replyTo && msg.senderUid === currentUser.uid && msg.replyTo === lastMessage.id);
             const timeDiff = now - lastMessage.timestamp;
-            if (!hasReplies && timeDiff >= 7200000) { // 2 hours = 7200000 ms
+            const isRead = lastMessage.readBy && lastMessage.readBy[currentUser.uid];
+            if (!hasReplies && !isRead && timeDiff >= 300000) { // 5 minutes = 300000 ms
               const senderUid = lastMessage.senderUid;
               const sender = usersData[senderUid] || {};
               const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
@@ -222,10 +239,9 @@
         const postsSnap = await db.ref(`posts/${currentUser.uid}`).once('value');
         const posts = postsSnap.val() || {};
         for (const [postId, post] of Object.entries(posts)) {
-          // Comments
           if (post.comments) {
             for (const [commentId, comment] of Object.entries(post.comments)) {
-              if (comment.senderUid !== currentUser.uid && comment.timestamp > now - 86400000) { // Within 24 hours
+              if (comment.senderUid !== currentUser.uid && comment.timestamp > now - 86400000) {
                 const sender = usersData[comment.senderUid] || {};
                 const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
                 notifications.push({
@@ -238,10 +254,9 @@
               }
             }
           }
-          // Likes
           if (post.likes) {
             for (const [likeId, like] of Object.entries(post.likes)) {
-              if (like.senderUid !== currentUser.uid && like.timestamp > now - 86400000) { // Within 24 hours
+              if (like.senderUid !== currentUser.uid && like.timestamp > now - 86400000) {
                 const sender = usersData[like.senderUid] || {};
                 const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
                 notifications.push({
@@ -256,19 +271,23 @@
           }
         }
 
-        // 7. Friend Requests
-        const friendRequestsSnap = await db.ref(`friendRequests/${currentUser.uid}`).once('value');
-        const friendRequests = friendRequestsSnap.val() || {};
-        for (const [requestId, request] of Object.entries(friendRequests)) {
-          const sender = usersData[request.senderUid] || {};
-          const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
-          notifications.push({
-            type: 'friend',
-            message: `${name} sent you a friend request`,
-            action: `<a href="profile.html?uid=${request.senderUid}" class="notification-action">View Profile</a>`,
-            timestamp: request.timestamp,
-            icon: `<svg viewBox="0 0 20 20"><path d="M9 2a4 4 0 100 8 4 4 0 000-8zm-7 9a7 7 0 0114 0v1a2 2 0 01-2 2H4a2 2 0 01-2-2v-1zm13-1a1 1 0 011-1h2a1 1 0 011 1v3a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3z"/></svg>`
-          });
+        // 7. New Posts by Others
+        for (const [uid, user] of Object.entries(usersData)) {
+          if (uid === currentUser.uid) continue;
+          const userPostsSnap = await db.ref(`posts/${uid}`).once('value');
+          const userPosts = userPostsSnap.val() || {};
+          for (const [postId, post] of Object.entries(userPosts)) {
+            if (post.timestamp > now - 86400000) { // Within 24 hours
+              const name = [user.firstName, user.surname].filter(Boolean).join(' ') || 'Someone';
+              notifications.push({
+                type: 'post',
+                message: `${name} posted on ${formatDate(post.timestamp)}`,
+                action: `<a href="profile.html?uid=${uid}" class="notification-action">View Profile</a>`,
+                timestamp: post.timestamp,
+                icon: `<svg viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4l-2-2V5zm2 2v6h10V7H4z"/></svg>`
+              });
+            }
+          }
         }
 
         // Sort and render
