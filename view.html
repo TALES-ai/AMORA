@@ -19,9 +19,9 @@
     .user-profile img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
     main{margin-top:80px;padding-bottom:100px}
     .section{margin:1.5rem}
-    .profile-card{background:var(--card);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;gap:1rem}
+    .profile-card{background:var(--card);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;gap:1rem;align-items:flex-start}
     .profile-card img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)}
-    .profile-info{flex:1}
+    .profile-info{flex:1;text-align:left}
     .profile-name{font-size:1.3rem;font-weight:600;margin-bottom:.5rem}
     .profile-details{font-size:.9rem;color:var(--light);margin-bottom:.25rem}
     .profile-bio{font-size:.95rem;color:var(--text);line-height:1.4;margin-bottom:.5rem}
@@ -36,9 +36,9 @@
     .post-header{display:flex;align-items:center;gap:.75rem;padding:1rem}
     .post-header img{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
     .post-header .name{font-weight:600;font-size:1rem}
-    .post-content img{width:100%;height:300px;object-fit:cover;border-radius:10px}
-    .post-content .title{font-size:1.1rem;font-weight:600;padding:0 1rem;margin:.5rem 0}
-    .post-content .description{font-size:.9rem;padding:0 1rem .5rem;color:var(--light);line-height:1.4}
+    .post-content img{width:100%;height:auto;object-fit:cover;border-radius:0}
+    .post-content .title{font-size:1.1rem;font-weight:600;padding:1rem 1rem 0.5rem 1rem}
+    .post-content .description{font-size:.9rem;padding:0 1rem 0.5rem;color:var(--light);line-height:1.4}
     .post-actions{display:flex;justify-content:space-between;padding:0 1rem .75rem;align-items:center}
     .like-btn{display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.9rem}
     .like-btn svg{width:24px;height:24px}
@@ -54,11 +54,11 @@
       .header{padding:1rem;gap:.75rem}
       .logo{width:40px;height:40px}
       .user-profile img{width:36px;height:36px}
-      .profile-card{flex-direction:column;align-items:center;text-align:center}
+      .profile-card{flex-direction:column;align-items:flex-start;text-align:left}
       .profile-card img{width:80px;height:80px}
       .posts{grid-template-columns:1fr}
       .post-header img{width:50px;height:50px}
-      .post-content img{height:250px}
+      .post-content img{height:auto}
     }
   </style>
 </head>
@@ -81,7 +81,7 @@
     <div id="toast" class="toast hidden"></div>
   </main>
   <nav class="nav">
-    <a href="home.html" class="active">
+    <a href="home.html">
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       <span>Home</span>
     </a>
@@ -114,7 +114,6 @@
     const toast = $('toast');
     let currentUser = null;
     let allUsers = [];
-
     function showToast(message, isError = false) {
       toast.textContent = message;
       toast.classList.remove('hidden', 'show', 'error');
@@ -122,7 +121,6 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
-
     async function toggleLike(postUid, postId, likeBtn) {
       try {
         const likeRef = db.ref(`posts/${postUid}/${postId}/likes/${currentUser.uid}`);
@@ -149,7 +147,6 @@
         }
       }
     }
-
     async function toggleFollow(userUid, followBtn) {
       try {
         const followRef = db.ref(`followers/${userUid}/${currentUser.uid}`);
@@ -167,7 +164,6 @@
         showToast('Error following user: ' + err.message, true);
       }
     }
-
     async function renderProfile() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
@@ -177,7 +173,6 @@
           setTimeout(() => location.href = 'home.html', 1000);
           return;
         }
-
         const userSnap = await db.ref('users').once('value');
         allUsers = userSnap.val() ? Object.entries(userSnap.val()).map(([uid, u]) => ({ ...u, uid })) : [];
         const user = allUsers.find(u => u.uid === targetUid);
@@ -186,11 +181,9 @@
           setTimeout(() => location.href = 'home.html', 1000);
           return;
         }
-
         const me = allUsers.find(u => u.uid === currentUser.uid);
         const myName = `${me?.firstName || ''} ${me?.surname || ''}`.trim() || currentUser.email.split('@')[0];
         userPhoto.src = me?.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(myName)}&background=e91e63&color=fff&size=40`;
-
         const name = [user.firstName, user.surname].filter(Boolean).join(' ') || 'User';
         const age = user.birthDate ? Math.floor((Date.now() - new Date(user.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : user.birthYear ? new Date().getFullYear() - user.birthYear : 'Not specified';
         const location = user.residence ? `${user.residence}, ${user.country || ''}`.trim() : (user.country || user.nationality || 'Not specified');
@@ -211,16 +204,16 @@
           <img src="${pic}" alt="${name}">
           <div class="profile-info">
             <div class="profile-name">${name}</div>
-            <div class="profile-details">Followers: ${followerCount}</div>
-            <div class="profile-details">Age: ${age}</div>
-            <div class="profile-details">Location: ${location}</div>
-            <div class="profile-details">Account Type: ${accountType}</div>
-            <div class="profile-details">Email: ${email}</div>
-            <div class="profile-details">Gender: ${gender}</div>
-            <div class="profile-details">Nationality: ${nationality}</div>
-            <div class="profile-details">Birth Year: ${birthYear}</div>
-            <div class="profile-bio">Bio: ${bio}</div>
-            <div class="profile-interests">Interests: ${interests}</div>
+            <div class="profile-details"><strong>Followers:</strong> ${followerCount}</div>
+            <div class="profile-details"><strong>Age:</strong> ${age}</div>
+            <div class="profile-details"><strong>Gender:</strong> ${gender}</div>
+            <div class="profile-details"><strong>Location:</strong> ${location}</div>
+            <div class="profile-details"><strong>Nationality:</strong> ${nationality}</div>
+            <div class="profile-details"><strong>Birth Year:</strong> ${birthYear}</div>
+            <div class="profile-details"><strong>Account Type:</strong> ${accountType}</div>
+            <div class="profile-details"><strong>Email:</strong> ${email}</div>
+            <div class="profile-bio"><strong>Bio:</strong> ${bio}</div>
+            <div class="profile-interests"><strong>Interests:</strong> ${interests}</div>
             <div class="profile-actions">
               <a href="messages.html?uid=${targetUid}" class="action-btn message">
                 <svg viewBox="0 0 24 24">
@@ -232,7 +225,6 @@
             </div>
           </div>
         `;
-
         const postsSnap = await db.ref(`posts/${targetUid}`).once('value');
         const userPosts = postsSnap.val() ? Object.entries(postsSnap.val()).map(([postId, post]) => ({ ...post, postId, uid: targetUid })) : [];
         const filteredPosts = userPosts.filter(post => post.timestamp > Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -276,7 +268,6 @@
         console.error('Render error:', err);
       }
     }
-
     auth.onAuthStateChanged(user => {
       if (!user) {
         showToast('Not logged in. Redirecting...', true);
