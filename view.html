@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AMORA – Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <style>
+    :root{--bg:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);--card:#fff;--text:#1a1a1a;--light:#6b7280;--accent:#e91e63;--green:#10b981;--blue:#3b82f6;--radius:20px;--shadow:0 4px 20px rgba(233,30,99,.1);--border:#f3e8ff}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{background:var(--card);padding:1rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.05);position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:1rem}
+    .logo{width:48px;height:48px;border-radius:50%;object-fit:cover}
+    .title{position:absolute;left:50%;transform:translateX(-50%);font-size:1.2rem;font-weight:600}
+    .user-profile{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem}
+    .user-profile img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
+    main{margin-top:80px;padding-bottom:100px}
+    .section{margin:1.5rem}
+    .profile-card{background:var(--card);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;gap:1rem}
+    .profile-card img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)}
+    .profile-info{flex:1}
+    .profile-name{font-size:1.3rem;font-weight:600;margin-bottom:.5rem}
+    .profile-details{font-size:.9rem;color:var(--light);margin-bottom:.25rem}
+    .profile-bio{font-size:.95rem;color:var(--text);line-height:1.4;margin-bottom:.5rem}
+    .profile-interests{font-size:.9rem;color:var(--blue);font-style:italic}
+    .profile-actions{display:flex;gap:1rem;margin-top:1rem}
+    .action-btn{font-size:.9rem;color:#fff;background:var(--accent);padding:.5rem 1rem;border-radius:10px;text-decoration:none;font-weight:500}
+    .action-btn.follow{background:var(--green)}
+    .action-btn.follow.following{background:#ccc}
+    .posts{display:flex;flex-direction:column;gap:.5rem}
+    .post-card{background:var(--card);border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative}
+    .post-header{display:flex;align-items:center;gap:.75rem;padding:1rem}
+    .post-header img{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+    .post-header .name{font-weight:600;font-size:1rem}
+    .post-content img{width:100%;height:300px;object-fit:cover;border-radius:10px}
+    .post-content .title{font-size:1.1rem;font-weight:600;padding:0 1rem;margin:.5rem 0}
+    .post-content .description{font-size:.9rem;padding:0 1rem .5rem;color:var(--light);line-height:1.4}
+    .post-actions{display:flex;justify-content:space-between;padding:0 1rem .75rem}
+    .like-btn{display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.9rem}
+    .like-btn svg{width:24px;height:24px}
+    .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:.75rem 0;box-shadow:0 -2px 10px rgba(0,0,0,.05);z-index:100}
+    .nav a{display:flex;flex-direction:column;align-items:center;color:var(--light);text-decoration:none;font-size:.7rem}
+    .nav a.active{color:var(--accent)}
+    .nav svg{width:24px;height:24px;margin-bottom:.25rem}
+    .toast{position:fixed;top:20px;right:20px;padding:1rem 1.5rem;background:var(--accent);color:#fff;border-radius:var(--radius);box-shadow:var(--shadow);transform:translateX(100%);transition:.3s;z-index:200;min-width:250px}
+    .toast.show{transform:translateX(0)}
+    .toast.error{background:#ef4444}
+    .hidden{display:none}
+    @media (max-width: 768px) {
+      .header{padding:1rem;gap:.75rem}
+      .logo{width:40px;height:40px}
+      .user-profile img{width:36px;height:36px}
+      .profile-card{flex-direction:column;align-items:center;text-align:center}
+      .profile-card img{width:80px;height:80px}
+      .posts{grid-template-columns:1fr}
+      .post-header img{width:50px;height:50px}
+      .post-content img{height:250px}
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <img src="logo.jpg" alt="AMORA" class="logo">
+    <div class="title">Profile</div>
+    <a href="profile.html" class="user-profile" id="userProfile">
+      <img id="userPhoto" src="" alt="You">
+    </a>
+  </header>
+  <main>
+    <section class="section">
+      <div class="profile-card" id="profileCard"></div>
+    </section>
+    <section class="section">
+      <h2>Posts</h2>
+      <div class="posts" id="posts"></div>
+    </section>
+    <div id="toast" class="toast hidden"></div>
+  </main>
+  <nav class="nav">
+    <a href="home.html" class="active">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="messages.html">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M18 12.5v-6a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2z"/></svg>
+      <span>Messages</span>
+    </a>
+    <a href="notifications.html">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+      <span>Alerts</span>
+    </a>
+  </nav>
+  <script>
+    const config = {
+      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
+      authDomain: "amora-bytales.firebaseapp.com",
+      databaseURL: "https://amora-bytales-default-rtdb.firebaseio.com",
+      projectId: "amora-bytales",
+      storageBucket: "amora-bytales.firebasestorage.app",
+      messagingSenderId: "378090826699",
+      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e"
+    };
+    firebase.initializeApp(config);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const $ = id => document.getElementById(id);
+    const profileCard = $('profileCard');
+    const posts = $('posts');
+    const userPhoto = $('userPhoto');
+    const toast = $('toast');
+    let currentUser = null;
+    let allUsers = [];
+
+    function showToast(message, isError = false) {
+      toast.textContent = message;
+      toast.classList.remove('hidden', 'show', 'error');
+      if (isError) toast.classList.add('error');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    async function toggleLike(postUid, postId, likeBtn) {
+      try {
+        const likeRef = db.ref(`posts/${postUid}/${postId}/likes/${currentUser.uid}`);
+        const snap = await likeRef.once('value');
+        if (snap.exists()) {
+          await likeRef.remove();
+          likeBtn.querySelector('svg').style.fill = 'none';
+        } else {
+          await likeRef.set({ senderUid: currentUser.uid, timestamp: Date.now() });
+          likeBtn.querySelector('svg').style.fill = 'red';
+        }
+        const likesSnap = await db.ref(`posts/${postUid}/${postId}/likes`).once('value');
+        const count = likesSnap.val() ? Object.keys(likesSnap.val()).length : 0;
+        likeBtn.querySelector('span').textContent = `${count} likes`;
+      } catch (err) {
+        showToast('Error liking post: ' + err.message, true);
+      }
+    }
+
+    async function toggleFollow(userUid, followBtn) {
+      try {
+        const followRef = db.ref(`followers/${userUid}/${currentUser.uid}`);
+        const snap = await followRef.once('value');
+        if (snap.exists()) {
+          await followRef.remove();
+          followBtn.textContent = 'Follow';
+          followBtn.classList.remove('following');
+        } else {
+          await followRef.set({ followerUid: currentUser.uid, timestamp: Date.now() });
+          followBtn.textContent = 'Following';
+          followBtn.classList.add('following');
+        }
+      } catch (err) {
+        showToast('Error following user: ' + err.message, true);
+      }
+    }
+
+    async function renderProfile() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUid = urlParams.get('uid');
+        if (!targetUid) {
+          showToast('No user specified.', true);
+          setTimeout(() => location.href = 'home.html', 1000);
+          return;
+        }
+
+        // Fetch all users for current user profile pic
+        const userSnap = await db.ref('users').once('value');
+        allUsers = userSnap.val() ? Object.entries(userSnap.val()).map(([uid, u]) => ({ ...u, uid })) : [];
+        const user = allUsers.find(u => u.uid === targetUid);
+        if (!user) {
+          showToast('User not found.', true);
+          setTimeout(() => location.href = 'home.html', 1000);
+          return;
+        }
+
+        // Current user profile pic
+        const me = allUsers.find(u => u.uid === currentUser.uid);
+        const myName = `${me?.firstName || ''} ${me?.surname || ''}`.trim() || currentUser.email.split('@')[0];
+        userPhoto.src = me?.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(myName)}&background=e91e63&color=fff&size=40`;
+
+        // Profile
+        const name = [user.firstName, user.surname].filter(Boolean).join(' ') || 'User';
+        const age = user.birthDate ? Math.floor((Date.now() - new Date(user.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : user.birthYear ? new Date().getFullYear() - user.birthYear : 'Not specified';
+        const location = user.residence ? `${user.residence}, ${user.country || ''}`.trim() : (user.country || user.nationality || 'Not specified');
+        const bio = user.bio || 'No bio provided';
+        const interests = Array.isArray(user.interests) ? user.interests.join(', ') : user.interests || 'None';
+        const accountType = user.accountType ? user.accountType.charAt(0).toUpperCase() + user.accountType.slice(1) : 'Not specified';
+        const email = user.email || 'Not specified';
+        const gender = user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : 'Not specified';
+        const nationality = user.nationality || 'Not specified';
+        const birthYear = user.birthYear || 'Not specified';
+        const pic = user.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=100`;
+        const isOwnProfile = targetUid === currentUser.uid;
+        const followSnap = await db.ref(`followers/${targetUid}/${currentUser.uid}`).once('value');
+        const isFollowing = followSnap.exists();
+        profileCard.innerHTML = `
+          <img src="${pic}" alt="${name}">
+          <div class="profile-info">
+            <div class="profile-name">${name}</div>
+            <div class="profile-details">Age: ${age}</div>
+            <div class="profile-details">Location: ${location}</div>
+            <div class="profile-details">Account Type: ${accountType}</div>
+            <div class="profile-details">Email: ${email}</div>
+            <div class="profile-details">Gender: ${gender}</div>
+            <div class="profile-details">Nationality: ${nationality}</div>
+            <div class="profile-details">Birth Year: ${birthYear}</div>
+            <div class="profile-bio">Bio: ${bio}</div>
+            <div class="profile-interests">Interests: ${interests}</div>
+            <div class="profile-actions">
+              <a href="messages.html?uid=${targetUid}" class="action-btn">Message User</a>
+              ${isOwnProfile ? `<a href="profile.html" class="action-btn">Edit Profile</a>` : ''}
+              ${!isOwnProfile ? `<a href="#" class="action-btn follow${isFollowing ? ' following' : ''}" onclick="toggleFollow('${targetUid}', this)">${isFollowing ? 'Following' : 'Follow'}</a>` : ''}
+            </div>
+          </div>
+        `;
+
+        // Posts
+        const postsSnap = await db.ref(`posts/${targetUid}`).once('value');
+        const userPosts = postsSnap.val() ? Object.entries(postsSnap.val()).map(([postId, post]) => ({ ...post, postId, uid: targetUid })) : [];
+        const filteredPosts = userPosts.filter(post => post.timestamp > Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const postPromises = filteredPosts.map(async post => {
+          const likesSnap = await db.ref(`posts/${targetUid}/${post.postId}/likes`).once('value');
+          const likes = likesSnap.val() ? Object.keys(likesSnap.val()).length : 0;
+          const isLiked = likesSnap.val()?.[currentUser.uid];
+          const followSnap = await db.ref(`followers/${targetUid}/${currentUser.uid}`).once('value');
+          const isFollowing = followSnap.exists();
+          return `
+            <div class="post-card">
+              <div class="post-header">
+                <img src="${pic}" alt="${name}">
+                <div class="name">${name}</div>
+              </div>
+              <div class="post-content">
+                <img src="${post.image || 'https://via.placeholder.com/300'}" alt="${post.title}">
+                <div class="title">${post.title || 'Untitled'}</div>
+                <div class="description">${post.description || ''}</div>
+              </div>
+              <div class="post-actions">
+                <div class="like-btn" onclick="toggleLike('${targetUid}', '${post.postId}', this)">
+                  <svg viewBox="0 0 24 24" style="fill:${isLiked ? 'red' : 'none'};stroke:red;stroke-width:2">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                  <span>${likes} likes</span>
+                </div>
+                <a href="messages.html?uid=${targetUid}" class="action-btn">Message User</a>
+                <a href="#" class="action-btn follow${isFollowing ? ' following' : ''}" onclick="toggleFollow('${targetUid}', this)">${isFollowing ? 'Following' : 'Follow'}</a>
+              </div>
+            </div>
+          `;
+        });
+        posts.innerHTML = (await Promise.all(postPromises)).join('') || '<p>No posts yet.</p>';
+      } catch (err) {
+        showToast('Error loading profile: ' + err.message, true);
+        console.error('Render error:', err);
+      }
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        showToast('Not logged in. Redirecting...', true);
+        setTimeout(() => location.href = 'index.html', 1000);
+        return;
+      }
+      currentUser = user;
+      renderProfile();
+    });
+  </script>
+</body>
+</html>
