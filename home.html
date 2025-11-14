@@ -9,7 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <style>
-    :root{--bg:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);--card:#fff;--text:#1a1a1a;--light:#6b7280;--accent:#e91e63;--green:#10b981;--blue:#3b82f6;--radius:20px;--shadow:0 4px 20px rgba(233,30,99,.1);--border:#f3e8ff}
+    :root{--bg:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);--card:#fff;--text:#1a1a1a;--light:#6b7280;--accent:#e91e63;--green:#10b981;--blue:#3b82f6;--radius:20px;--shadow:0 4px 20px rgba(233,30,99,.1);--border:#f3e8ff;--gold:#ffd700}
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
     .header{background:var(--card);padding:1rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.05);position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:1rem}
@@ -23,21 +23,27 @@
     h2{font-size:1.2rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
     .stories{display:flex;overflow-x:auto;gap:1rem;padding:1rem 0;scrollbar-width:none}
     .stories::-webkit-scrollbar{display:none}
-    .story{flex:0 0 80px;text-align:center;cursor:pointer;transition:.2s}
+    .story{flex:0 0 80px;text-align:center;cursor:pointer;transition:.2s;position:relative}
     .story img{width:70px;height:70px;border-radius:50%;border:3px solid var(--accent);margin-bottom:.5rem;object-fit:cover}
     .story .name{font-size:.8rem;font-weight:500}
     .story .location{font-size:.7rem;color:var(--light);margin-top:2px}
+    .story.premium img{border-color:var(--gold)}
+    .story.premium::after{content:'';position:absolute;top:0;right:0;width:16px;height:16px;background:var(--gold);border-radius:50%;border:2px solid var(--card)}
     .slider{display:flex;overflow-x:auto;gap:1rem;padding:1rem 0;scrollbar-width:none}
     .slider::-webkit-scrollbar{display:none}
-    .slider-card{flex:0 0 100px;text-align:center;cursor:pointer}
+    .slider-card{flex:0 0 100px;text-align:center;cursor:pointer;position:relative}
     .slider-card img{width:80px;height:80px;border-radius:50%;border:2px solid var(--border);margin-bottom:.5rem;object-fit:cover}
     .slider-card .name{font-size:.8rem;font-weight:500}
-    .posts{display:flex;flex-direction:column;gap:.5rem}
+    .slider-card.premium img{border-color:var(--gold)}
+    .slider-card.premium::after{content:'';position:absolute;top:0;right:0;width:16px;height:16px;background:var(--gold);border-radius:50%;border:2px solid var(--card)}
+    .posts{display:flex;flex-direction:column;gap:1rem}
     .post-card{background:var(--card);border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative}
-    .post-header{display:flex;align-items:center;gap:.75rem;padding:1rem}
+    .post-header{display:flex;align-items:center;gap:.75rem;padding:1rem;position:relative}
     .post-header img{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
     .post-header .name{font-weight:600;font-size:1rem}
-    .post-content img{width:100%;height:300px;object-fit:cover;border-radius:10px}
+    .post-header.premium img{border-color:var(--gold)}
+    .post-header.premium::after{content:'';position:absolute;top:1rem;left:4.5rem;width:16px;height:16px;background:var(--gold);border-radius:50%;border:2px solid var(--card)}
+    .post-content img{width:100%;height:auto;object-fit:contain;border-radius:10px}
     .post-content .title{font-size:1.1rem;font-weight:600;padding:0 1rem;margin:.5rem 0}
     .post-content .description{font-size:.9rem;padding:0 1rem .5rem;color:var(--light);line-height:1.4}
     .post-actions{display:flex;justify-content:space-between;padding:0 1rem .75rem;align-items:center}
@@ -63,9 +69,9 @@
       .search{width:100px;padding:.5rem .75rem;font-size:.8rem}
       .logo{width:40px;height:40px}
       .user-profile img{width:36px;height:36px}
-      .posts{grid-template-columns:1fr}
+      .posts{gap:1.5rem}
       .post-header img{width:50px;height:50px}
-      .post-content img{height:250px}
+      .post-content img{height:auto}
     }
   </style>
 </head>
@@ -130,7 +136,6 @@
     const toast = $('toast');
     let allUsers = [];
     let currentUser = null;
-
     function showToast(message, isError = false) {
       toast.textContent = message;
       toast.classList.remove('hidden', 'show', 'error');
@@ -138,7 +143,6 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
-
     function shufflePosts(posts) {
       const shuffled = [...posts].sort(() => Math.random() - 0.5);
       const result = [];
@@ -151,7 +155,6 @@
       }
       return result;
     }
-
     async function toggleLike(postUid, postId, likeBtn) {
       try {
         const likeRef = db.ref(`posts/${postUid}/${postId}/likes/${currentUser.uid}`);
@@ -178,7 +181,6 @@
         }
       }
     }
-
     async function toggleFollow(userUid, followBtn) {
       try {
         const followRef = db.ref(`followers/${userUid}/${currentUser.uid}`);
@@ -196,7 +198,6 @@
         showToast('Error following user: ' + err.message, true);
       }
     }
-
     async function renderContent() {
       try {
         const userSnap = await db.ref('users/' + currentUser.uid).once('value');
@@ -209,25 +210,22 @@
         }
         const myGender = me.gender;
         console.log('Current user gender:', myGender);
-
         const usersSnap = await db.ref('users').once('value');
         allUsers = usersSnap.val() ? Object.entries(usersSnap.val()).map(([uid, u]) => ({ ...u, uid })) : [];
-
         const myName = `${me.firstName || ''} ${me.surname || ''}`.trim() || currentUser.email.split('@')[0];
         userPhoto.src = me.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(myName)}&background=e91e63&color=fff&size=40`;
-
         const others = allUsers.filter(u => u.uid !== currentUser.uid);
         stories.innerHTML = others.map(u => {
           const name = u.firstName || u.middleName || 'User';
           const location = u.residence ? `${u.residence}, ${u.country || ''}`.trim() : (u.country || u.nationality || '');
           const pic = u.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=70`;
-          return `<div class="story" onclick="location.href='view.html?uid=${u.uid}'">
+          const premiumClass = u.accountType === 'premium' ? 'premium' : '';
+          return `<div class="story ${premiumClass}" onclick="location.href='view.html?uid=${u.uid}'">
             <img src="${pic}" alt="${name}">
             <div class="name">${name}</div>
             <div class="location">${location || 'Not specified'}</div>
           </div>`;
         }).join('');
-
         let recsList = myGender === 'male' ? others.filter(u => u.gender === 'female') :
                        myGender === 'female' ? others.filter(u => u.gender === 'male') : others;
         recsList = recsList.sort(() => Math.random() - 0.5).slice(0, 6);
@@ -235,12 +233,12 @@
           const name = u.firstName || u.middleName || 'User';
           const location = u.residence ? `${u.residence}, ${u.country || ''}`.trim() : (u.country || u.nationality || 'Not specified');
           const pic = u.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=80`;
-          return `<div class="slider-card" onclick="location.href='view.html?uid=${u.uid}'">
+          const premiumClass = u.accountType === 'premium' ? 'premium' : '';
+          return `<div class="slider-card ${premiumClass}" onclick="location.href='view.html?uid=${u.uid}'">
             <img src="${pic}" alt="${name}">
             <div class="name">${name}</div>
           </div>`;
         }).join('') : '<p>No matches yet.</p>';
-
         const oppositeGender = myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : null;
         if (!oppositeGender) {
           posts.innerHTML = '<p>Update your gender for personalized posts.</p>';
@@ -271,9 +269,10 @@
           const isLiked = likesSnap.val()?.[currentUser.uid];
           const followSnap = await db.ref(`followers/${post.uid}/${currentUser.uid}`).once('value');
           const isFollowing = followSnap.exists();
+          const premiumClass = user?.accountType === 'premium' ? 'premium' : '';
           return `
             <div class="post-card">
-              <div class="post-header">
+              <div class="post-header ${premiumClass}">
                 <img src="${pic}" alt="${name}">
                 <div class="name">${name}</div>
               </div>
@@ -301,7 +300,6 @@
           `;
         });
         posts.innerHTML = (await Promise.all(postPromises)).join('') || '<p>No posts yet. Check back later!</p>';
-
         searchInput.addEventListener('input', () => {
           const query = searchInput.value.toLowerCase().trim();
           const filteredUsers = allUsers.filter(u => {
@@ -312,7 +310,8 @@
             const name = u.firstName || u.middleName || 'User';
             const location = u.residence ? `${u.residence}, ${u.country || ''}`.trim() : (u.country || u.nationality || '');
             const pic = u.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=70`;
-            return `<div class="story" onclick="location.href='view.html?uid=${u.uid}'">
+            const premiumClass = u.accountType === 'premium' ? 'premium' : '';
+            return `<div class="story ${premiumClass}" onclick="location.href='view.html?uid=${u.uid}'">
               <img src="${pic}" alt="${name}">
               <div class="name">${name}</div>
               <div class="location">${location || 'Not specified'}</div>
@@ -324,7 +323,8 @@
             const name = u.firstName || u.middleName || 'User';
             const location = u.residence ? `${u.residence}, ${u.country || ''}`.trim() : (u.country || u.nationality || 'Not specified');
             const pic = u.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e91e63&color=fff&size=80`;
-            return `<div class="slider-card" onclick="location.href='view.html?uid=${u.uid}'">
+            const premiumClass = u.accountType === 'premium' ? 'premium' : '';
+            return `<div class="slider-card ${premiumClass}" onclick="location.href='view.html?uid=${u.uid}'">
               <img src="${pic}" alt="${name}">
               <div class="name">${name}</div>
             </div>`;
@@ -335,7 +335,6 @@
         console.error('Render error:', err);
       }
     }
-
     auth.onAuthStateChanged(user => {
       if (!user) {
         showToast('Not logged in. Redirecting...', true);
