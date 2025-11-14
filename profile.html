@@ -25,6 +25,7 @@
     .profile-info{display:flex;flex-direction:column;justify-content:center}
     .name{font-size:1.4rem;font-weight:700;margin-bottom:.25rem}
     .birthday{font-size:1rem;color:var(--light);margin-bottom:.5rem}
+    .followers{font-size:1rem;color:var(--light);margin-bottom:.5rem}
     .change-photo-btn{background:var(--accent);color:#fff;padding:.5rem 1rem;border:none;border-radius:var(--radius);font-weight:500;cursor:pointer;transition:.2s;display:inline-block;margin-bottom:.5rem}
     .change-photo-btn:hover{background:#c81c56;transform:translateY(-1px)}
     .other-options{display:flex;gap:1rem}
@@ -85,6 +86,7 @@
       <div class="profile-info">
         <div class="name" id="nameDisplay">Loading...</div>
         <div class="birthday" id="birthdayDisplay">Birthday: ? (? years old)</div>
+        <div class="followers" id="followersDisplay">Followers: 0</div>
         <label class="change-photo-btn" for="photoInput">Change Profile Photo</label>
         <div class="other-options">
           <a href="interest.html">My Interests</a>
@@ -213,6 +215,7 @@
     const photoInput = $('photoInput');
     const nameDisplay = $('nameDisplay');
     const birthdayDisplay = $('birthdayDisplay');
+    const followersDisplay = $('followersDisplay');
     const saveBtn = $('saveBtn');
     const toast = $('toast');
     const userPhoto = $('userPhoto');
@@ -222,7 +225,6 @@
     let currentUser = null;
     let profileData = {};
     let initialData = {};
-
     function showToast(message, isError = false) {
       toast.textContent = message;
       toast.classList.remove('hidden', 'show', 'error');
@@ -230,7 +232,6 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
-
     function calculateAge(birthDateStr) {
       if (!birthDateStr) return '?';
       const birthDate = new Date(birthDateStr);
@@ -242,7 +243,6 @@
       }
       return age;
     }
-
     function updateProgress() {
       const fields = ['firstName', 'surname', 'gender', 'birthDate', 'profession', 'bio', 'nationality', 'reason', 'height', 'accountType'];
       let completed = 0;
@@ -256,7 +256,6 @@
         showToast(`Your profile is ${Math.round(percentage)}% complete. Fill in all details for better matches!`);
       }
     }
-
     function checkForChanges() {
       const fields = ['firstName', 'middleName', 'surname', 'gender', 'birthDate', 'phone', 'nationality', 'country', 'residence', 'bio', 'profession', 'customProfession', 'reason', 'height', 'accountType'];
       let hasChanges = false;
@@ -273,7 +272,6 @@
       if (photoInput.files.length > 0) hasChanges = true;
       saveBtn.classList.toggle('hidden', !hasChanges);
     }
-
     // Auto-fill birth year from date of birth
     $('birthDate').addEventListener('change', () => {
       const birthDate = $('birthDate').value;
@@ -286,14 +284,12 @@
       checkForChanges();
       updateProgress();
     });
-
     // Profession dropdown logic
     profession.addEventListener('change', () => {
       customProfession.style.display = profession.value === 'Other' ? 'block' : 'none';
       checkForChanges();
       updateProgress();
     });
-
     // Capitalize first letter for names
     ['firstName', 'middleName', 'surname'].forEach(id => {
       $(id)?.addEventListener('blur', () => {
@@ -304,7 +300,6 @@
         checkForChanges();
       });
     });
-
     // Account type logic
     $('accountType').addEventListener('change', () => {
       if ($('accountType').value === 'premium') {
@@ -314,7 +309,6 @@
       checkForChanges();
       updateProgress();
     });
-
     // Attach change listeners for all inputs
     ['firstName', 'middleName', 'surname', 'gender', 'phone', 'nationality', 'country', 'residence', 'bio', 'customProfession', 'reason', 'height'].forEach(id => {
       $(id)?.addEventListener('input', () => {
@@ -322,7 +316,6 @@
         updateProgress();
       });
     });
-
     // AUTH STATE
     auth.onAuthStateChanged(async user => {
       if (!user) {
@@ -334,6 +327,10 @@
       try {
         const snap = await db.ref('users/' + user.uid).once('value');
         profileData = snap.val() || {};
+        // FETCH FOLLOWERS COUNT
+        const followersSnap = await db.ref('followers/' + user.uid).once('value');
+        const followersCount = followersSnap.numChildren() || 0;
+        followersDisplay.textContent = `Followers: ${followersCount}`;
         // FILL FORM WITH USER DATA
         $('firstName').value = initialData.firstName = profileData.firstName || '';
         $('middleName').value = initialData.middleName = profileData.middleName || '';
@@ -372,9 +369,7 @@
         showToast("Error loading profile: " + err.message, true);
       }
     });
-
     const predefinedProfessions = ['Software Developer', 'Doctor', 'Teacher', 'Engineer', 'Artist', 'Entrepreneur'];
-
     // PHOTO UPLOAD
     photoInput.addEventListener('change', async () => {
       if (!currentUser || !photoInput.files[0]) return;
@@ -409,7 +404,6 @@
         photoInput.value = '';
       }
     });
-
     // SAVE PROFILE
     saveBtn.addEventListener('click', async () => {
       if (!currentUser) {
