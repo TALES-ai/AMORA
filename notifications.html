@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AMORA – Notifications</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <style>
+    :root{--bg:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);--card:#fff;--text:#1a1a1a;--light:#6b7280;--accent:#e91e63;--green:#10b981;--blue:#3b82f6;--radius:20px;--shadow:0 4px 20px rgba(233,30,99,.1);--border:#f3e8ff}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{background:var(--card);padding:1rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.05);position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+    .logo{width:60px;height:60px;border-radius:50%;object-fit:cover}
+    .title{position:absolute;left:50%;transform:translateX(-50%);font-size:1.2rem;font-weight:600}
+    .user-profile{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem}
+    .user-profile img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
+    main{margin-top:90px;padding:1.5rem;padding-bottom:120px}
+    .section{margin-bottom:1.5rem}
+    .label{font-size:.8rem;color:var(--light);margin-bottom:.5rem;display:block;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+    .notifications-list{display:grid;grid-template-columns:1fr;gap:1rem}
+    .notification-card{padding:1rem;border-radius:var(--radius);box-shadow:var(--shadow);display:flex;align-items:center;gap:1rem;border:1px solid var(--border)}
+    .notification-card.welcome{background:linear-gradient(135deg,rgba(233,30,99,.15),rgba(255,255,255,.9))}
+    .notification-card.message{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(255,255,255,.9))}
+    .notification-card.birthday{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(255,255,255,.9))}
+    .notification-card.profile{background:linear-gradient(135deg,rgba(233,30,99,.15),rgba(255,255,255,.9))}
+    .notification-card.premium{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(255,255,255,.9))}
+    .notification-card.post{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(255,255,255,.9))}
+    .notification-card.friend{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(255,255,255,.9))}
+    .notification-icon{width:40px;height:40px;border-radius:50%;background:rgba(233,30,99,.2);display:flex;align-items:center;justify-content:center}
+    .notification-icon svg{width:24px;height:24px;fill:var(--accent)}
+    .notification-content{flex:1}
+    .notification-message{font-size:.95rem;font-weight:500;margin-bottom:.25rem}
+    .notification-time{font-size:.8rem;color:var(--light)}
+    .notification-action{text-decoration:none;color:var(--accent);font-size:.9rem;font-weight:500}
+    .notification-action:hover{text-decoration:underline}
+    .no-notifications{font-size:.9rem;color:var(--light);text-align:center;padding:1rem}
+    .toast{position:fixed;top:20px;right:20px;padding:1rem 1.5rem;background:var(--accent);color:#fff;border-radius:var(--radius);box-shadow:var(--shadow);transform:translateX(100%);transition:.3s;z-index:200;min-width:250px}
+    .toast.show{transform:translateX(0)}
+    .toast.error{background:#ef4444}
+    .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:.75rem 0;box-shadow:0 -2px 10px rgba(0,0,0,.05);z-index:100}
+    .nav a{display:flex;flex-direction:column;align-items:center;color:var(--light);text-decoration:none;font-size:.7rem;transition:.2s}
+    .nav a.active{color:var(--accent)}
+    .nav a:hover{transform:translateY(-2px)}
+    .nav svg{width:24px;height:24px;margin-bottom:.25rem}
+    .hidden{display:none}
+    @media (max-width: 768px) {
+      .header{padding:1rem;gap:.5rem}
+      main{padding:1rem;padding-bottom:100px}
+      .logo{width:50px;height:50px}
+      .user-profile img{width:40px;height:40px}
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <img src="logo.jpg" alt="AMORA" class="logo">
+    <div class="title">Notifications</div>
+    <a href="profile.html" class="user-profile" id="userProfile">
+      <img id="userPhoto" src="" alt="You">
+    </a>
+  </header>
+  <main>
+    <div class="section">
+      <div class="label">Your Notifications</div>
+      <div class="notifications-list" id="notificationsList"></div>
+    </div>
+    <div id="toast" class="toast hidden"></div>
+  </main>
+  <nav class="nav">
+    <a href="home.html">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="messages.html">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M18 12.5v-6a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2z"/></svg>
+      <span>Messages</span>
+    </a>
+    <a href="notifications.html" class="active">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+      <span>Notifications</span>
+    </a>
+  </nav>
+  <script>
+    const config = {
+      apiKey: "AIzaSyBvrSpU_UsLdrwsG6h8OrQ2GinKZkP-nps",
+      authDomain: "amora-bytales.firebaseapp.com",
+      databaseURL: "https://amora-bytales-default-rtdb.firebaseio.com",
+      projectId: "amora-bytales",
+      storageBucket: "amora-bytales.firebasestorage.app",
+      messagingSenderId: "378090826699",
+      appId: "1:378090826699:web:cf4cbd3f3b3afe65d5644e"
+    };
+    firebase.initializeApp(config);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const $ = id => document.getElementById(id);
+    const toast = $('toast');
+    const userPhoto = $('userPhoto');
+    const notificationsList = $('notificationsList');
+    let currentUser = null;
+    let profileData = {};
+    let usersData = {};
+
+    function showToast(message, isError = false) {
+      toast.textContent = message;
+      toast.classList.remove('hidden', 'show', 'error');
+      if (isError) toast.classList.add('error');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function formatDate(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
+    }
+
+    function isTodayBirthday(dateOfBirth) {
+      const today = new Date('2025-11-14'); // For testing, set to Nov 14, 2025
+      const dob = new Date(dateOfBirth);
+      return dob.getDate() === today.getDate() && dob.getMonth() === today.getMonth();
+    }
+
+    function calculateAge(dateOfBirth) {
+      const today = new Date('2025-11-14'); // For testing, set to Nov 14, 2025
+      const dob = new Date(dateOfBirth);
+      return today.getFullYear() - dob.getFullYear();
+    }
+
+    function isMonday7AM() {
+      const now = new Date('2025-11-17T07:00:00'); // For testing, set to Monday, Nov 17, 2025, 7 AM
+      return now.getDay() === 1 && now.getHours() === 7 && now.getMinutes() === 0;
+    }
+
+    async function generateNotifications() {
+      const notifications = [];
+      const now = Date.now();
+      try {
+        // 1. Welcome Notification
+        if (profileData.joinDate) {
+          const joinDate = new Date(profileData.joinDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+          notifications.push({
+            type: 'welcome',
+            message: `Today, ${joinDate}, you joined the vibrant AMORA community! Connect, share, and discover meaningful connections.`,
+            action: '',
+            timestamp: profileData.joinDate,
+            icon: `<svg viewBox="0 0 20 20"><path d="M10 2a8 8 0 00-8 8c0 4.4 3.6 8 8 8s8-3.6 8-8a8 8 0 00-8-8zm0 14a6 6 0 01-6-6 6 6 0 0112 0 6 6 0 01-6 6z"/></svg>`
+          });
+        }
+
+        // 2. Incomplete Profile
+        if (!profileData.firstName || !profileData.surname || !profileData.dateOfBirth) {
+          notifications.push({
+            type: 'profile',
+            message: 'Your profile is incomplete. Add your name and birthday for better matches!',
+            action: `<a href="profile.html" class="notification-action">Complete Profile</a>`,
+            timestamp: now,
+            icon: `<svg viewBox="0 0 20 20"><path d="M10 2a4 4 0 100 8 4 4 0 000-8zM2 18a8 8 0 0116 0v-1a3 3 0 00-3-3H5a3 3 0 00-3 3v1z"/></svg>`
+          });
+        }
+
+        // 3. Free Account Reminder (Monday 7 AM)
+        if (profileData.accountType === 'free' && isMonday7AM()) {
+          notifications.push({
+            type: 'premium',
+            message: 'Unlock full AMORA features! Upgrade to premium today.',
+            action: `<a href="premium.html" class="notification-action">Go Premium</a>`,
+            timestamp: now - 1000,
+            icon: `<svg viewBox="0 0 20 20"><path d="M10 2a2 2 0 00-2 2v2H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2h-2V4a2 2 0 00-2-2zm-1 4V4a1 1 0 112 0v2H9z"/></svg>`
+          });
+        }
+
+        // 4. Birthday Notifications
+        Object.entries(usersData).forEach(([uid, user]) => {
+          if (uid !== currentUser.uid && user.dateOfBirth && isTodayBirthday(user.dateOfBirth)) {
+            const name = [user.firstName, user.surname].filter(Boolean).join(' ') || 'Someone';
+            const age = calculateAge(user.dateOfBirth);
+            notifications.push({
+              type: 'birthday',
+              message: `Today, ${name} is turning ${age}! Wish them a happy birthday.`,
+              action: `<a href="messages.html?uid=${uid}" class="notification-action">Message</a>`,
+              timestamp: now - 2000,
+              icon: `<svg viewBox="0 0 20 20"><path d="M10 2a2 2 0 00-2 2c0 1.1.9 2 2 2s2-.9 2-2a2 2 0 00-2-2zm5 5H5a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg>`
+            });
+          }
+        });
+
+        // 5. Unread Messages (over 2 hours)
+        const chatIds = Object.keys(usersData).map(uid => [ `${uid}_${currentUser.uid}`, `${currentUser.uid}_${uid}` ]).flat();
+        for (const chatId of chatIds) {
+          try {
+            const chatSnap = await db.ref(`chats/${chatId}`).once('value');
+            const chat = chatSnap.val();
+            if (!chat || !chat.messages) continue;
+            console.log(`Processing chat: ${chatId}`, chat); // Debug
+            const messages = Object.entries(chat.messages).map(([id, msg]) => ({ id, ...msg }));
+            const lastMessage = messages.sort((a, b) => b.timestamp - a.timestamp)[0];
+            if (!lastMessage || lastMessage.senderUid === currentUser.uid) continue;
+            console.log('Last message:', lastMessage); // Debug
+            const hasReplies = messages.some(msg => msg.replies && Object.keys(msg.replies).length > 0 && msg.senderUid === lastMessage.senderUid);
+            const timeDiff = now - lastMessage.timestamp;
+            if (!hasReplies && timeDiff >= 7200000) { // 2 hours = 7200000 ms
+              const senderUid = lastMessage.senderUid;
+              const sender = usersData[senderUid] || {};
+              const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
+              notifications.push({
+                type: 'message',
+                message: `You have a new message from ${name}`,
+                action: `<a href="messages.html?uid=${senderUid}" class="notification-action">Message</a>`,
+                timestamp: lastMessage.timestamp,
+                icon: `<svg viewBox="0 0 20 20"><path d="M18 12.5v-6a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2z"/></svg>`
+              });
+            }
+          } catch (err) {
+            console.log(`Error accessing chat ${chatId}:`, err); // Debug
+          }
+        }
+
+        // 6. Post Interactions (Comments and Likes)
+        const postsSnap = await db.ref(`posts/${currentUser.uid}`).once('value');
+        const posts = postsSnap.val() || {};
+        for (const [postId, post] of Object.entries(posts)) {
+          // Comments
+          if (post.comments) {
+            for (const [commentId, comment] of Object.entries(post.comments)) {
+              if (comment.senderUid !== currentUser.uid && comment.timestamp > now - 86400000) { // Within 24 hours
+                const sender = usersData[comment.senderUid] || {};
+                const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
+                notifications.push({
+                  type: 'post',
+                  message: `${name} commented on your post`,
+                  action: `<a href="post.html" class="notification-action">View Post</a>`,
+                  timestamp: comment.timestamp,
+                  icon: `<svg viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4l-2-2V5zm2 2v6h10V7H4z"/></svg>`
+                });
+              }
+            }
+          }
+          // Likes
+          if (post.likes) {
+            for (const [likeId, like] of Object.entries(post.likes)) {
+              if (like.senderUid !== currentUser.uid && like.timestamp > now - 86400000) { // Within 24 hours
+                const sender = usersData[like.senderUid] || {};
+                const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
+                notifications.push({
+                  type: 'post',
+                  message: `${name} liked your post`,
+                  action: `<a href="post.html" class="notification-action">View Post</a>`,
+                  timestamp: like.timestamp,
+                  icon: `<svg viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v7.333H6z"/></svg>`
+                });
+              }
+            }
+          }
+        }
+
+        // 7. Friend Requests
+        const friendRequestsSnap = await db.ref(`friendRequests/${currentUser.uid}`).once('value');
+        const friendRequests = friendRequestsSnap.val() || {};
+        for (const [requestId, request] of Object.entries(friendRequests)) {
+          const sender = usersData[request.senderUid] || {};
+          const name = [sender.firstName, sender.surname].filter(Boolean).join(' ') || 'Someone';
+          notifications.push({
+            type: 'friend',
+            message: `${name} sent you a friend request`,
+            action: `<a href="profile.html?uid=${request.senderUid}" class="notification-action">View Profile</a>`,
+            timestamp: request.timestamp,
+            icon: `<svg viewBox="0 0 20 20"><path d="M9 2a4 4 0 100 8 4 4 0 000-8zm-7 9a7 7 0 0114 0v1a2 2 0 01-2 2H4a2 2 0 01-2-2v-1zm13-1a1 1 0 011-1h2a1 1 0 011 1v3a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3z"/></svg>`
+          });
+        }
+
+        // Sort and render
+        notifications.sort((a, b) => b.timestamp - a.timestamp);
+        notificationsList.innerHTML = notifications.length ? notifications.map(n => `
+          <div class="notification-card ${n.type}">
+            <div class="notification-icon">${n.icon}</div>
+            <div class="notification-content">
+              <div class="notification-message">${n.message}</div>
+              <div class="notification-time">${formatDate(n.timestamp)}</div>
+            </div>
+            ${n.action || ''}
+          </div>
+        `).join('') : '<p class="no-notifications">No notifications yet.</p>';
+      } catch (err) {
+        showToast("Error loading notifications: " + err.message, true);
+        console.error('Notification error:', err); // Debug
+      }
+    }
+
+    // AUTH STATE
+    auth.onAuthStateChanged(async user => {
+      if (!user) {
+        showToast("Not logged in. Redirecting...", true);
+        setTimeout(() => location.href = 'index.html', 1000);
+        return;
+      }
+      currentUser = user;
+      try {
+        // Load user profile
+        const userSnap = await db.ref('users/' + user.uid).once('value');
+        profileData = userSnap.val() || {};
+        const fullName = [profileData.firstName, profileData.middleName, profileData.surname].filter(Boolean).join(' ') || user.email.split('@')[0];
+        const picUrl = profileData.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e91e63&color=fff&size=48`;
+        userPhoto.src = picUrl;
+
+        // Load all users for birthdays and names
+        const usersSnap = await db.ref('users').once('value');
+        usersData = usersSnap.val() || {};
+        console.log('Users data:', usersData); // Debug
+
+        // Generate notifications
+        await generateNotifications();
+        showToast("Notifications loaded.");
+      } catch (err) {
+        showToast("Error loading data: " + err.message, true);
+        console.error('Auth error:', err); // Debug
+      }
+    });
+  </script>
+</body>
+</html>
