@@ -30,6 +30,7 @@
     .action-btn{font-size:.9rem;color:#fff;background:var(--accent);padding:.5rem 1rem;border-radius:10px;text-decoration:none;font-weight:500}
     .action-btn.follow{background:var(--green)}
     .action-btn.follow.following{background:#ccc}
+    .action-btn.message svg{width:24px;height:24px;fill:#fff}
     .posts{display:flex;flex-direction:column;gap:.5rem}
     .post-card{background:var(--card);border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative}
     .post-header{display:flex;align-items:center;gap:.75rem;padding:1rem}
@@ -38,7 +39,7 @@
     .post-content img{width:100%;height:300px;object-fit:cover;border-radius:10px}
     .post-content .title{font-size:1.1rem;font-weight:600;padding:0 1rem;margin:.5rem 0}
     .post-content .description{font-size:.9rem;padding:0 1rem .5rem;color:var(--light);line-height:1.4}
-    .post-actions{display:flex;justify-content:space-between;padding:0 1rem .75rem}
+    .post-actions{display:flex;justify-content:space-between;padding:0 1rem .75rem;align-items:center}
     .like-btn{display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.9rem}
     .like-btn svg{width:24px;height:24px}
     .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:.75rem 0;box-shadow:0 -2px 10px rgba(0,0,0,.05);z-index:100}
@@ -127,8 +128,14 @@
         const likeRef = db.ref(`posts/${postUid}/${postId}/likes/${currentUser.uid}`);
         const snap = await likeRef.once('value');
         if (snap.exists()) {
-          await likeRef.remove();
-          likeBtn.querySelector('svg').style.fill = 'none';
+          try {
+            await likeRef.remove();
+            likeBtn.querySelector('svg').style.fill = 'none';
+          } catch (err) {
+            if (err.code !== 'PERMISSION_DENIED') {
+              showToast('Error unliking post: ' + err.message, true);
+            }
+          }
         } else {
           await likeRef.set({ senderUid: currentUser.uid, timestamp: Date.now() });
           likeBtn.querySelector('svg').style.fill = 'red';
@@ -137,7 +144,9 @@
         const count = likesSnap.val() ? Object.keys(likesSnap.val()).length : 0;
         likeBtn.querySelector('span').textContent = `${count} likes`;
       } catch (err) {
-        showToast('Error liking post: ' + err.message, true);
+        if (err.code !== 'PERMISSION_DENIED') {
+          showToast('Error liking post: ' + err.message, true);
+        }
       }
     }
 
@@ -169,7 +178,6 @@
           return;
         }
 
-        // Fetch all users for current user profile pic
         const userSnap = await db.ref('users').once('value');
         allUsers = userSnap.val() ? Object.entries(userSnap.val()).map(([uid, u]) => ({ ...u, uid })) : [];
         const user = allUsers.find(u => u.uid === targetUid);
@@ -179,12 +187,10 @@
           return;
         }
 
-        // Current user profile pic
         const me = allUsers.find(u => u.uid === currentUser.uid);
         const myName = `${me?.firstName || ''} ${me?.surname || ''}`.trim() || currentUser.email.split('@')[0];
         userPhoto.src = me?.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(myName)}&background=e91e63&color=fff&size=40`;
 
-        // Profile
         const name = [user.firstName, user.surname].filter(Boolean).join(' ') || 'User';
         const age = user.birthDate ? Math.floor((Date.now() - new Date(user.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : user.birthYear ? new Date().getFullYear() - user.birthYear : 'Not specified';
         const location = user.residence ? `${user.residence}, ${user.country || ''}`.trim() : (user.country || user.nationality || 'Not specified');
@@ -199,10 +205,13 @@
         const isOwnProfile = targetUid === currentUser.uid;
         const followSnap = await db.ref(`followers/${targetUid}/${currentUser.uid}`).once('value');
         const isFollowing = followSnap.exists();
+        const followersSnap = await db.ref(`followers/${targetUid}`).once('value');
+        const followerCount = followersSnap.val() ? Object.keys(followersSnap.val()).length : 0;
         profileCard.innerHTML = `
           <img src="${pic}" alt="${name}">
           <div class="profile-info">
             <div class="profile-name">${name}</div>
+            <div class="profile-details">Followers: ${followerCount}</div>
             <div class="profile-details">Age: ${age}</div>
             <div class="profile-details">Location: ${location}</div>
             <div class="profile-details">Account Type: ${accountType}</div>
@@ -213,14 +222,17 @@
             <div class="profile-bio">Bio: ${bio}</div>
             <div class="profile-interests">Interests: ${interests}</div>
             <div class="profile-actions">
-              <a href="messages.html?uid=${targetUid}" class="action-btn">Message User</a>
+              <a href="messages.html?uid=${targetUid}" class="action-btn message">
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                </svg>
+              </a>
               ${isOwnProfile ? `<a href="profile.html" class="action-btn">Edit Profile</a>` : ''}
               ${!isOwnProfile ? `<a href="#" class="action-btn follow${isFollowing ? ' following' : ''}" onclick="toggleFollow('${targetUid}', this)">${isFollowing ? 'Following' : 'Follow'}</a>` : ''}
             </div>
           </div>
         `;
 
-        // Posts
         const postsSnap = await db.ref(`posts/${targetUid}`).once('value');
         const userPosts = postsSnap.val() ? Object.entries(postsSnap.val()).map(([postId, post]) => ({ ...post, postId, uid: targetUid })) : [];
         const filteredPosts = userPosts.filter(post => post.timestamp > Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -237,8 +249,8 @@
                 <div class="name">${name}</div>
               </div>
               <div class="post-content">
-                <img src="${post.image || 'https://via.placeholder.com/300'}" alt="${post.title}">
                 <div class="title">${post.title || 'Untitled'}</div>
+                <img src="${post.image || 'https://via.placeholder.com/300'}" alt="${post.title}">
                 <div class="description">${post.description || ''}</div>
               </div>
               <div class="post-actions">
@@ -248,7 +260,11 @@
                   </svg>
                   <span>${likes} likes</span>
                 </div>
-                <a href="messages.html?uid=${targetUid}" class="action-btn">Message User</a>
+                <a href="messages.html?uid=${targetUid}" class="action-btn message">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                  </svg>
+                </a>
                 <a href="#" class="action-btn follow${isFollowing ? ' following' : ''}" onclick="toggleFollow('${targetUid}', this)">${isFollowing ? 'Following' : 'Follow'}</a>
               </div>
             </div>

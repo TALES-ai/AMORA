@@ -40,12 +40,13 @@
     .post-content img{width:100%;height:300px;object-fit:cover;border-radius:10px}
     .post-content .title{font-size:1.1rem;font-weight:600;padding:0 1rem;margin:.5rem 0}
     .post-content .description{font-size:.9rem;padding:0 1rem .5rem;color:var(--light);line-height:1.4}
-    .post-actions{display:flex;justify-content:space-between;padding:0 1rem .75rem}
+    .post-actions{display:flex;justify-content:space-between;padding:0 1rem .75rem;align-items:center}
     .like-btn{display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.9rem}
     .like-btn svg{width:24px;height:24px}
     .action-btn{font-size:.9rem;color:var(--accent);text-decoration:none;font-weight:500}
     .action-btn.follow{background:var(--green);color:#fff;padding:.25rem .75rem;border-radius:10px}
     .action-btn.follow.following{background:#ccc;color:#fff}
+    .action-btn.message svg{width:24px;height:24px;fill:var(--accent)}
     .visit-profile{position:absolute;top:1rem;right:1rem;font-size:.8rem;color:#fff;background:var(--accent);padding:.25rem .75rem;border-radius:10px;text-decoration:none;font-weight:500}
     .add-post{position:fixed;bottom:80px;right:1rem;width:48px;height:48px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;box-shadow:0 2px 10px rgba(0,0,0,.2);z-index:99}
     .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;justify-content:space-around;padding:.75rem 0;box-shadow:0 -2px 10px rgba(0,0,0,.05);z-index:100}
@@ -53,7 +54,6 @@
     .nav a.active{color:var(--accent)}
     .nav svg{width:24px;height:24px;margin-bottom:.25rem}
     .status{font-size:.85rem;color:var(--light);text-align:center;margin:1rem 0}
-    .premium-label{font-size:.7rem;background:#f59e0b;color:#fff;padding:2px 6px;border-radius:8px;font-weight:600}
     .toast{position:fixed;top:20px;right:20px;padding:1rem 1.5rem;background:var(--accent);color:#fff;border-radius:var(--radius);box-shadow:var(--shadow);transform:translateX(100%);transition:.3s;z-index:200;min-width:250px}
     .toast.show{transform:translateX(0)}
     .toast.error{background:#ef4444}
@@ -80,7 +80,7 @@
   <main>
     <div class="status">New Profiles in AMORA</div>
     <section class="section">
-      <h2>Stories <span class="premium-label">Premium</span></h2>
+      <h2>Stories</h2>
       <div class="stories" id="stories"></div>
     </section>
     <section class="section">
@@ -157,8 +157,14 @@
         const likeRef = db.ref(`posts/${postUid}/${postId}/likes/${currentUser.uid}`);
         const snap = await likeRef.once('value');
         if (snap.exists()) {
-          await likeRef.remove();
-          likeBtn.querySelector('svg').style.fill = 'none';
+          try {
+            await likeRef.remove();
+            likeBtn.querySelector('svg').style.fill = 'none';
+          } catch (err) {
+            if (err.code !== 'PERMISSION_DENIED') {
+              showToast('Error unliking post: ' + err.message, true);
+            }
+          }
         } else {
           await likeRef.set({ senderUid: currentUser.uid, timestamp: Date.now() });
           likeBtn.querySelector('svg').style.fill = 'red';
@@ -167,7 +173,9 @@
         const count = likesSnap.val() ? Object.keys(likesSnap.val()).length : 0;
         likeBtn.querySelector('span').textContent = `${count} likes`;
       } catch (err) {
-        showToast('Error liking post: ' + err.message, true);
+        if (err.code !== 'PERMISSION_DENIED') {
+          showToast('Error liking post: ' + err.message, true);
+        }
       }
     }
 
@@ -191,7 +199,6 @@
 
     async function renderContent() {
       try {
-        // Fetch current user's data
         const userSnap = await db.ref('users/' + currentUser.uid).once('value');
         const me = userSnap.val();
         console.log('Current user data:', me);
@@ -203,15 +210,12 @@
         const myGender = me.gender;
         console.log('Current user gender:', myGender);
 
-        // Fetch all users
         const usersSnap = await db.ref('users').once('value');
         allUsers = usersSnap.val() ? Object.entries(usersSnap.val()).map(([uid, u]) => ({ ...u, uid })) : [];
 
-        // Update profile pic
         const myName = `${me.firstName || ''} ${me.surname || ''}`.trim() || currentUser.email.split('@')[0];
         userPhoto.src = me.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(myName)}&background=e91e63&color=fff&size=40`;
 
-        // Stories
         const others = allUsers.filter(u => u.uid !== currentUser.uid);
         stories.innerHTML = others.map(u => {
           const name = u.firstName || u.middleName || 'User';
@@ -224,7 +228,6 @@
           </div>`;
         }).join('');
 
-        // You May Like (Slider)
         let recsList = myGender === 'male' ? others.filter(u => u.gender === 'female') :
                        myGender === 'female' ? others.filter(u => u.gender === 'male') : others;
         recsList = recsList.sort(() => Math.random() - 0.5).slice(0, 6);
@@ -238,7 +241,6 @@
           </div>`;
         }).join('') : '<p>No matches yet.</p>';
 
-        // Posts: Fetch for opposite-gender users
         const oppositeGender = myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : null;
         if (!oppositeGender) {
           posts.innerHTML = '<p>Update your gender for personalized posts.</p>';
@@ -276,8 +278,8 @@
                 <div class="name">${name}</div>
               </div>
               <div class="post-content">
-                <img src="${post.image || 'https://via.placeholder.com/300'}" alt="${post.title}">
                 <div class="title">${post.title || 'Untitled'}</div>
+                <img src="${post.image || 'https://via.placeholder.com/300'}" alt="${post.title}">
                 <div class="description">${post.description || ''}</div>
               </div>
               <div class="post-actions">
@@ -287,7 +289,11 @@
                   </svg>
                   <span>${likes} likes</span>
                 </div>
-                <a href="messages.html?uid=${post.uid}" class="action-btn">Message User</a>
+                <a href="messages.html?uid=${post.uid}" class="action-btn message">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                  </svg>
+                </a>
                 <a href="#" class="action-btn follow${isFollowing ? ' following' : ''}" onclick="toggleFollow('${post.uid}', this)">${isFollowing ? 'Following' : 'Follow'}</a>
               </div>
               <a href="view.html?uid=${post.uid}" class="visit-profile">Visit Profile</a>
@@ -296,7 +302,6 @@
         });
         posts.innerHTML = (await Promise.all(postPromises)).join('') || '<p>No posts yet. Check back later!</p>';
 
-        // Search
         searchInput.addEventListener('input', () => {
           const query = searchInput.value.toLowerCase().trim();
           const filteredUsers = allUsers.filter(u => {
