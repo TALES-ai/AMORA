@@ -17,7 +17,7 @@
     .title{position:absolute;left:50%;transform:translateX(-50%);font-size:1.2rem;font-weight:600}
     .user-profile{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem}
     .user-profile img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
-    main{margin-top:90px;padding:1.5rem;padding-bottom:80px}
+    main{margin-top:90px;padding:1.5rem;padding-bottom:120px} /* Increased padding-bottom for nav */
     .profile-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:2rem}
     .profile-pic{position:relative;width:120px;height:120px;border-radius:50%;overflow:hidden;box-shadow:var(--shadow);transition:.3s;flex-shrink:0}
     .profile-pic:hover{transform:scale(1.05)}
@@ -59,7 +59,7 @@
     .progress-fill{background:var(--blue);height:100%;transition:.3s;border-radius:2px}
     @media (max-width: 768px) {
       .header{padding:1rem;gap:.5rem}
-      main{padding:1rem}
+      main{padding:1rem;padding-bottom:100px} /* Adjusted for mobile */
       .row{flex-direction:column;gap:.5rem}
       .profile-pic{width:100px;height:100px}
       .name{font-size:1.2rem}
