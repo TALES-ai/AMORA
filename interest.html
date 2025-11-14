@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat melts
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <style>
     :root{--bg:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);--card:#fff;--text:#1a1a1a;--light:#6b7280;--accent:#e91e63;--green:#10b981;--blue:#3b82f6;--radius:20px;--shadow:0 4px 20px rgba(233,30,99,.1);--border:#f3e8ff}
     *{margin:0;padding:0;box-sizing:border-box}
@@ -17,7 +17,7 @@
     .title{position:absolute;left:50%;transform:translateX(-50%);font-size:1.2rem;font-weight:600}
     .user-profile{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem}
     .user-profile img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
-    main{margin-top:90px;padding:1.5rem;padding-bottom:120px} /* Increased padding-bottom for nav */
+    main{margin-top:90px;padding:1.5rem;padding-bottom:120px}
     .section{margin-bottom:1.5rem}
     .label{font-size:.8rem;color:var(--light);margin-bottom:.5rem;display:block;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
     .label.required::after{content:' *';color:var(--accent)}
@@ -58,9 +58,10 @@
     .other-options{display:flex;gap:1rem;margin-bottom:1rem}
     .other-options a{display:inline-block;background:var(--card);padding:.5rem 1.5rem;border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem;transition:.2s}
     .other-options a:hover{background:#f9fafb;transform:translateY(-1px)}
+    .error-message{font-size:.9rem;color:#ef4444;text-align:center;padding:1rem;display:none}
     @media (max-width: 768px) {
       .header{padding:1rem;gap:.5rem}
-      main{padding:1rem;padding-bottom:100px} /* Adjusted for mobile */
+      main{padding:1rem;padding-bottom:100px}
       .other-options{flex-direction:column;gap:.5rem}
       .logo{width:50px;height:50px}
       .user-profile img{width:40px;height:40px}
@@ -81,6 +82,7 @@
       <a href="post.html">My Posts</a>
     </div>
     <div class="divider"></div>
+    <div class="error-message" id="errorMessage">Failed to load interests. Please try again later.</div>
     <div class="section interests-section">
       <div class="label required">What You Like Doing</div>
       <input type="text" class="input" id="interestSearch" placeholder="Search interests...">
@@ -162,6 +164,7 @@
     const religion = $('religion');
     const progressFill = $('progressFill');
     const progressText = $('progressText');
+    const errorMessage = $('errorMessage');
     let currentUser = null;
     let profileData = {};
     let initialData = {};
@@ -189,6 +192,17 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
+    function showErrorMessage(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      interestsGrid.style.display = 'none'; // Hide grid if error occurs
+    }
+
+    function hideErrorMessage() {
+      errorMessage.style.display = 'none';
+      interestsGrid.style.display = 'grid';
+    }
+
     function updateProgress() {
       const selectedInterests = [...document.querySelectorAll('.interest-checkbox input:checked')].length;
       const customCount = customInterests.value.trim() ? customInterests.value.split(',').map(i => i.trim()).filter(Boolean).length : 0;
@@ -205,56 +219,74 @@
     }
 
     function renderInterests(filter = '') {
-      const filteredInterests = predefinedInterests.filter(i => i.label.toLowerCase().includes(filter.toLowerCase()));
-      interestsGrid.innerHTML = filteredInterests.map(interest => `
-        <label class="interest-checkbox" role="checkbox" aria-checked="false">
-          <input type="checkbox" value="${interest.id}" aria-label="${interest.label}">
-          <span>${interest.label}</span>
-        </label>
-      `).join('');
-      // Re-apply saved interests
-      const savedInterests = profileData.interests || [];
-      document.querySelectorAll('.interest-checkbox input').forEach(input => {
-        input.checked = savedInterests.includes(input.value);
-        input.parentElement.classList.toggle('selected', input.checked);
-        input.parentElement.setAttribute('aria-checked', input.checked);
-      });
-      updateProgress();
+      try {
+        const filteredInterests = predefinedInterests.filter(i => i.label.toLowerCase().includes(filter.toLowerCase()));
+        interestsGrid.innerHTML = filteredInterests.map(interest => `
+          <label class="interest-checkbox" role="checkbox" aria-checked="false">
+            <input type="checkbox" value="${interest.id}" aria-label="${interest.label}">
+            <span>${interest.label}</span>
+          </label>
+        `).join('');
+        // Re-apply saved interests
+        const savedInterests = profileData.interests || [];
+        document.querySelectorAll('.interest-checkbox input').forEach(input => {
+          input.checked = savedInterests.includes(input.value);
+          input.parentElement.classList.toggle('selected', input.checked);
+          input.parentElement.setAttribute('aria-checked', input.checked);
+        });
+        updateProgress();
+        hideErrorMessage();
+      } catch (err) {
+        showErrorMessage("Error rendering interests: " + err.message);
+      }
     }
 
     function checkForChanges() {
-      const selectedInterests = [...document.querySelectorAll('.interest-checkbox input:checked')].map(input => input.value);
-      const customValue = customInterests.value.trim();
-      const customInterestsList = customValue ? customInterests.value.split(',').map(i => i.trim()).filter(Boolean) : [];
-      const allInterests = [...selectedInterests, ...customInterestsList];
-      const languages = getTags('languagesInput');
-      const dealbreakers = getTags('dealbreakersInput');
-      const relValue = religion.value === 'Other' ? customReligion.value.trim() : religion.value;
-      const hasChanges =
-        JSON.stringify(allInterests) !== JSON.stringify(initialData.interests || []) ||
-        JSON.stringify(languages) !== JSON.stringify(initialData.languages || []) ||
-        JSON.stringify(dealbreakers) !== JSON.stringify(initialData.dealbreakers || []) ||
-        relValue !== (initialData.religion || '');
-      saveBtn.classList.toggle('hidden', !hasChanges);
+      try {
+        const selectedInterests = [...document.querySelectorAll('.interest-checkbox input:checked')].map(input => input.value);
+        const customValue = customInterests.value.trim();
+        const customInterestsList = customValue ? customInterests.value.split(',').map(i => i.trim()).filter(Boolean) : [];
+        const allInterests = [...selectedInterests, ...customInterestsList];
+        const languages = getTags('languagesInput');
+        const dealbreakers = getTags('dealbreakersInput');
+        const relValue = religion.value === 'Other' ? customReligion.value.trim() : religion.value;
+        const hasChanges =
+          JSON.stringify(allInterests) !== JSON.stringify(initialData.interests || []) ||
+          JSON.stringify(languages) !== JSON.stringify(initialData.languages || []) ||
+          JSON.stringify(dealbreakers) !== JSON.stringify(initialData.dealbreakers || []) ||
+          relValue !== (initialData.religion || '');
+        saveBtn.classList.toggle('hidden', !hasChanges);
+      } catch (err) {
+        showToast("Error checking changes: " + err.message, true);
+      }
     }
 
     function addTag(containerId, value) {
-      const container = $(containerId);
-      const tag = document.createElement('span');
-      tag.className = 'tag';
-      tag.innerHTML = `${value} <span class="tag-remove" role="button" aria-label="Remove ${value}">&times;</span>`;
-      container.insertBefore(tag, container.querySelector('input'));
-      tag.querySelector('.tag-remove').addEventListener('click', () => {
-        tag.remove();
-        checkForChanges();
-      });
+      try {
+        const container = $(containerId);
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.innerHTML = `${value} <span class="tag-remove" role="button" aria-label="Remove ${value}">&times;</span>`;
+        container.insertBefore(tag, container.querySelector('input'));
+        tag.querySelector('.tag-remove').addEventListener('click', () => {
+          tag.remove();
+          checkForChanges();
+        });
+      } catch (err) {
+        showToast("Error adding tag: " + err.message, true);
+      }
     }
 
     function getTags(containerId) {
-      return [...$(containerId).querySelectorAll('.tag')].map(tag => tag.textContent.replace('×', '').trim());
+      try {
+        return [...$(containerId).querySelectorAll('.tag')].map(tag => tag.textContent.replace('×', '').trim());
+      } catch (err) {
+        showToast("Error getting tags: " + err.message, true);
+        return [];
+      }
     }
 
-    // Render interests
+    // Render interests initially
     renderInterests();
 
     // Interest search
@@ -332,7 +364,8 @@
         userPhoto.src = picUrl;
         showToast("Interests loaded. Edit and save changes.");
       } catch (err) {
-        showToast("Error loading: " + err.message, true);
+        showToast("Error loading data: " + err.message, true);
+        showErrorMessage("Failed to load interests. Please check your connection or try again later.");
       }
     });
 
@@ -342,27 +375,27 @@
         showToast("Not logged in.", true);
         return;
       }
-      const selectedInterests = [...document.querySelectorAll('.interest-checkbox input:checked')].map(input => input.value);
-      const customValue = customInterests.value.trim();
-      const customInterestsList = customValue ? customInterests.value.split(',').map(i => i.trim()).filter(Boolean) : [];
-      const allInterests = [...selectedInterests, ...customInterestsList];
-      if (allInterests.length < 3) {
-        showToast("Please select at least 3 interests for better matches!", true);
-        return;
-      }
-      const relValue = religion.value === 'Other' ? customReligion.value.trim() : religion.value;
-      const languagesList = getTags('languagesInput');
-      const dealbreakersList = getTags('dealbreakersInput');
-      saveBtn.textContent = '';
-      saveBtn.classList.add('saving');
-      saveBtn.disabled = true;
-      const updates = {
-        interests: allInterests,
-        languages: languagesList,
-        religion: relValue || '',
-        dealbreakers: dealbreakersList
-      };
       try {
+        const selectedInterests = [...document.querySelectorAll('.interest-checkbox input:checked')].map(input => input.value);
+        const customValue = customInterests.value.trim();
+        const customInterestsList = customValue ? customInterests.value.split(',').map(i => i.trim()).filter(Boolean) : [];
+        const allInterests = [...selectedInterests, ...customInterestsList];
+        if (allInterests.length < 3) {
+          showToast("Please select at least 3 interests for better matches!", true);
+          return;
+        }
+        const relValue = religion.value === 'Other' ? customReligion.value.trim() : religion.value;
+        const languagesList = getTags('languagesInput');
+        const dealbreakersList = getTags('dealbreakersInput');
+        saveBtn.textContent = '';
+        saveBtn.classList.add('saving');
+        saveBtn.disabled = true;
+        const updates = {
+          interests: allInterests,
+          languages: languagesList,
+          religion: relValue || '',
+          dealbreakers: dealbreakersList
+        };
         await db.ref('users/' + currentUser.uid).update(updates);
         showToast("Interests saved successfully!");
         setTimeout(() => location.href = 'profile.html', 1000);
