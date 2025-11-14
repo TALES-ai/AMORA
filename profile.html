@@ -29,8 +29,11 @@
     .change-photo-btn{background:var(--accent);color:#fff;padding:.5rem 1rem;border:none;border-radius:var(--radius);font-weight:500;cursor:pointer;transition:.2s;display:inline-block;margin-bottom:.5rem}
     .change-photo-btn:hover{background:#c81c56;transform:translateY(-1px)}
     .other-options{display:flex;gap:1rem}
-    .other-options a{display:inline-block;background:var(--card);padding:.5rem 1.5rem;border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--text);font-weight:500;font-size:.9rem;transition:.2s}
-    .other-options a:hover{background:#f9fafb;transform:translateY(-1px)}
+    .other-options a{display:inline-block;padding:.75rem 1.5rem;border:none;border-radius:var(--radius);text-decoration:none;color:#fff;font-weight:600;font-size:.95rem;transition:.2s;box-shadow:0 2px 8px rgba(0,0,0,.1);display:flex;align-items:center;gap:.5rem}
+    .other-options a:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+    .btn-interests{background:var(--blue);}
+    .btn-posts{background:var(--green);}
+    .other-options svg{width:18px;height:18px;fill:#fff}
     .divider{border-top:1px solid var(--border);margin:1.5rem 0}
     .section{margin-bottom:1.5rem}
     .label{font-size:.8rem;color:var(--light);margin-bottom:.5rem;display:block;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
@@ -89,8 +92,14 @@
         <div class="followers" id="followersDisplay">Followers: 0</div>
         <label class="change-photo-btn" for="photoInput">Change Profile Photo</label>
         <div class="other-options">
-          <a href="interest.html">My Interests</a>
-          <a href="post.html">My Posts</a>
+          <a class="btn-interests" href="interest.html">
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            My Interests
+          </a>
+          <a class="btn-posts" href="post.html">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-4-4h-4v-4h2V9h2v2h2v4h-2z"/></svg>
+            My Posts
+          </a>
         </div>
         <input type="file" id="photoInput" accept="image/*" class="hidden">
       </div>
@@ -330,7 +339,7 @@
         // FETCH FOLLOWERS COUNT
         const followersSnap = await db.ref('followers/' + user.uid).once('value');
         const followersCount = followersSnap.numChildren() || 0;
-        followersDisplay.textContent = `Followers: ${followersCount}`;
+        followersDisplay.innerHTML = `<strong>Followers:</strong> ${followersCount}`;
         // FILL FORM WITH USER DATA
         $('firstName').value = initialData.firstName = profileData.firstName || '';
         $('middleName').value = initialData.middleName = profileData.middleName || '';
@@ -358,7 +367,7 @@
         nameDisplay.textContent = fullName;
         const birthDateStr = profileData.birthDate ? new Date(profileData.birthDate).toLocaleDateString() : '?';
         const age = calculateAge(profileData.birthDate);
-        birthdayDisplay.textContent = `Birthday: ${birthDateStr} (${age} years old)`;
+        birthdayDisplay.innerHTML = `<strong>Birthday:</strong> ${birthDateStr} (${age} years old)`;
         // DISPLAY PHOTO
         const picUrl = profileData.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e91e63&color=fff&size=120`;
         photo.src = picUrl;
